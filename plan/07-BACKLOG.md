@@ -33,7 +33,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
   - Brzegowe: walidacja odrzuca `intervalMinutes: 0` (test `config.test.ts` → throw)
   CZYTAJ: `plan/02` sekcja 2.2, `plan/03` 3.1
 
-- [ ] **F0-03** `env` Env + `.env.example` + walidacja sekretów
+- [x] **F0-03** `env` Env + `.env.example` + walidacja sekretów ✓ .env.example 5 keys, lint 0, grep 0, warn not crash, validate ✓
   AC:
   - `.env.example` zawiera `UPSTASH_REDIS_REST_URL=`, `UPSTASH_REDIS_REST_TOKEN=`, `GMAIL_USER=`, `GMAIL_APP_PASSWORD=`, `CRON_SECRET=` bez wartości, `.env.local` w `.gitignore` (`grep ".env.local" .gitignore → 1`)
   - `lib/config.ts` waliduje brak `GMAIL_APP_PASSWORD` w prod → `console.warn` ale nie crash, w dev mock

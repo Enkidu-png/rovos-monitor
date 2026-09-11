@@ -15,7 +15,7 @@ export function loadConfig(): MonitorConfig {
   }
   // Validate secrets in prod - warn but not crash
   if (process.env.NODE_ENV === "production" && !process.env.GMAIL_APP_PASSWORD) {
-    console.warn("GMAIL_APP_PASSWORD missing in production - email will be mocked");
+    console.warn("Email auth missing in production - email will be mocked");
   }
   cachedConfig = result.data;
   return result.data;
@@ -31,7 +31,7 @@ if (require.main === module || process.argv.includes("--validate")) {
     const cfg = loadConfig();
     // Validate env secrets handling
     if (!process.env.GMAIL_APP_PASSWORD) {
-      console.warn("GMAIL_APP_PASSWORD not set - using mock (dev)");
+      console.warn("Email auth not set - using mock (dev)");
     }
     console.log(JSON.stringify(cfg, null, 2));
     console.log("\u2713 config valid");
