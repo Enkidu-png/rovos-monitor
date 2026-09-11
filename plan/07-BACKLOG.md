@@ -58,7 +58,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
   - Negatywne: `main` branch protected? nie wymagane, ale `git status` clean po commicie
   CZYTAJ: `plan/01` graf zależności, `plan/02` 2.3
 
-- [ ] **F0-06** `vercel-env` Vercel env vars + deploy preview
+- [x] **F0-06** `vercel-env` Vercel env vars + deploy preview ✓ vercel env fallback DECISIONS.md, build ✓, deploy https://rovos-monitor.vercel.app ready, curl health 200 0.48s, gho 0
   AC:
   - `vercel env ls | grep UPSTASH_REDIS_REST_URL` lub fallback instrukcja w `DECISIONS.md` jeśli Hobby bez KV (sprawdź dashboard Vercel)
   - `npm run build` lokalnie i `vercel --prod --yes` (lub `vercel deploy --prebuilt`) kończy `● Ready` (deploy preview URL w logu)
