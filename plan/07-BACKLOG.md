@@ -41,7 +41,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
   - Negatywne: żaden plik nie loguje wartości `UPSTASH_REDIS_REST_TOKEN` (`grep -r "UPSTASH_REDIS_REST_TOKEN" lib/ | grep "console.log" → 0`)
   CZYTAJ: `plan/02` sekcja 2.5
 
-- [ ] **F0-04** `bootstrap-pomiar` Weryfikacja pomiarów kontekstu (statusline + agent-context.sh)
+- [x] **F0-04** `bootstrap-pomiar` Weryfikacja pomiarów kontekstu (statusline + agent-context.sh) ✓ context-usage 57, agent-context 3 exit0, statusline grep 1
   AC:
   - `cat ~/.claude/context-usage.txt` zwraca liczbę 0-100 (`cat ~/.claude/context-usage.txt | grep -E "^[0-9]+$"` → match)
   - `bash ~/.claude/agent-context.sh` zwraca `NO-AGENT-TRANSCRIPT` lub liczbę (nie error) (`bash ~/.claude/agent-context.sh; echo $?` → 0)
