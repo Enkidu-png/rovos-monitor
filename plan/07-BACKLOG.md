@@ -24,7 +24,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
   - Negatywne: brak `axios`, `puppeteer` w `package.json` (`grep axios package.json → 0`), brak `@vercel/kv` (użyj `@upstash/redis` — `grep "@vercel/kv" package.json → 0`)
   CZYTAJ: `plan/02-fundamenty-tokeny-dane.md` sekcja 2.3, `plan/01` Z02, `plan/05` 05.6
 
-- [ ] **F0-02** `config` Dane kanoniczne `config/monitor.json` + `lib/schemas.ts` + `lib/config.ts`
+- [x] **F0-02** `config` Dane kanoniczne `config/monitor.json` + `lib/schemas.ts` + `lib/config.ts` ✓ jq recipient OK, tsc 0, validate ✓ config valid, grep 1 <=2, test 3 passed
   AC:
   - `config/monitor.json` zawiera `url: "https://rovos.com/journeys/specials/"`, `selector: "main"`, `intervalMinutes: 60`, `recipient: "js@architekton.gda.pl"` (sprawdź `cat config/monitor.json | jq .recipient` → `js@architekton.gda.pl`)
   - `lib/schemas.ts` eksportuje `MonitorConfigSchema`, `HistoryEntrySchema`, `KVKeys` — `npx tsc --noEmit` bez błędów

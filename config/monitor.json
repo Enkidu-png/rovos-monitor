@@ -1,0 +1,7 @@
+{
+  "url": "https://rovos.com/journeys/specials/",
+  "selector": "main",
+  "intervalMinutes": 60,
+  "recipient": "js@architekton.gda.pl",
+  "sender": "noreply@rovos-monitor.vercel.app"
+}
