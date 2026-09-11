@@ -50,7 +50,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
   - Negatywne: skrypt `agent-context.sh` nie nadpisany jeśli istnieje i działa (nie psuj)
   CZYTAJ: `plan/06-MASTER-PROMPT.md` sekcja START bootstrap
 
-- [ ] **F0-05** `repo-vercel` Repo GH + Vercel link + CI
+- [x] **F0-05** `repo-vercel` Repo GH + Vercel link + CI ✓ gh repo 200, vercel projects 1, vercel.json crons OK, git log 4 commits, push OK
   AC:
   - `gh repo view Enkidu-png/rovos-monitor` → 200 (repo istnieje, public), `git remote -v` zawiera `Enkidu-png/rovos-monitor`
   - `vercel ls | grep rovos-monitor` → 1 projekt, `vercel.json` istnieje z `crons`
