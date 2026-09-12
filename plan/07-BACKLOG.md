@@ -276,7 +276,7 @@ DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata
   - Negatywne: brak `—` w not-found copy, brak `border-left` na 404 karcie
   CZYTAJ: `plan/02` 2.6, `plan/04` anty-spec
 
-- [ ] **F5-03** `diacritics` Polskie znaki w mailu + diakrytyki test
+- [x] **F5-03** `diacritics` Polskie znaki w mailu + diakrytyki test ✓ buildEmailHtml Zażółć PASS charset utf-8 meta PASS grep charset 1 subject — 0 mock SMTP header PASS
   AC:
   - `buildEmailHtml({ snippet: "Zażółć gęślą jaźń - test" })` → HTML zawiera `Zażółć gęślą jaźń` bez korupcji (UTF-8, `expect(html).toContain("Zażółć")`)
   - Wysyłka maila z polskim `snippet` przez mock SMTP → `info.message` zawiera UTF-8 header `Content-Type: text/html; charset=utf-8`
