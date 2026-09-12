@@ -306,7 +306,12 @@ DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata
 
 DoD: każde znalezisko ma issue z pełnym AC obserwacyjnym, wagą i oszacowaniem; każde issue ma dyspozycję (zrobione / świadomie odrzucone z powodem / przeniesione do tracker). Zero znalezisk bez odpowiadającego issue.
 
-- [ ] (puste na starcie — workerzy dopisują wg zasady 7a)
+- [x] **F6-01** `review-niskie` Poprawki review 2026-09-12 (9 findings) ✓ 4 commity f33ff2f/c487890/a5ab416/d1545b4, build ✓, WERYFIKACJA.md ✓
+  AC: next.config.ts usunięty, ponytail: 0, escapeHtml ' 1, onClick 0, gitignore data/store.json 1, vercel cron 0 8 * * *, VERCEL_OIDC_TOKEN DECISIONS 1, usedFallback true — wszystkie grep/build/test zielone. Waga: niska · Oszacowanie: 1h
+- [ ] **F6-02** `sec-hardening-niskie` Hardening niskiego priorytetu (review pozostałe) — timingSafeEqual, escapeHtml `, SSRF url val, x-forwarded-for spoof
+  AC: `lib/email.ts` escape `` ` `` → `&#96;`, `app/api/cron/check` timingSafeEqual, `lib/scraper.ts` zod url val, `lib/storage.ts` try/catch corrupt JSON + console.error, `app/api/check` x-real-ip fallback. Weryfikacja: grep na kodzie + npm test green + npm run build ✓. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z08
+- [ ] **F6-03** `coverage-perfile` Coverage per-file ≥70% (obecnie storage 60%, config 44%, health 0%)
+  AC: `npm run test -- --coverage` per-file lib/storage ≥70, lib/config ≥70, app/api/health ≥70 (dopisać testy lub obniżyć AC do 60 i uzasadnić w DECISIONS.md). Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z02
 
 Przykład formatu znaleziska:
 ```
