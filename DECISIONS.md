@@ -45,3 +45,7 @@
 - README zawiera GMAIL_APP_PASSWORD, UPSTASH_REDIS_REST_URL, CRON_SECRET, vercel env add, vercel --prod.
 - Deploy preview: vercel Hobby daily cron, lokalnie curl /api/health 200 i / 200 zweryfikowane.
 
+## Review fix 2026-09-12 - VERCEL_OIDC_TOKEN w .env.local
+
+- `.env.local` zawiera `VERCEL_OIDC_TOKEN` wygenerowany przez `vercel env pull` (gitignored via `.env*`). Sekret nie jest commitowany. Rotacja: `vercel env pull` nadpisuje token; po wycieku `vercel --prod` + rotacja w dashboardzie. Lokalne uprawnienia: `chmod 600 .env.local`.
+
