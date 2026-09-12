@@ -143,7 +143,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
 
 DoD F2: `npm run build` bez błędów, `GET /` 200 SSR, `GET /api/health` 200 <100ms, `GET /nonexistent` 404, `vercel.json` crons poprawny, deploy preview działa, screenshot `screenshots/F2/`.
 
-- [ ] **F2-01** `layout` Layout + `globals.css` tokeny + metadata
+- [x] **F2-01** `layout` Layout + `globals.css` tokeny + metadata ✓ grep var(--color-bg) 1, Inter lang pl, curl html lang 1, zero hex 0, prefers-reduced-motion 1, build ✓ (dev curl 3001)
   AC:
   - `app/globals.css` zawiera `:root` z ` --color-bg`, `--radius-md` itd. (`grep "var(--color-bg)" app/globals.css → 1`)
   - `app/layout.tsx` ma `metadata: { title: "Rovos Monitor", description: "Monitoring..." }`, `html lang="pl"` lub `en`, font `Inter`
