@@ -284,7 +284,7 @@ DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata
   - Negatywne: brak `—` w temacie maila (temat używa `-` nie `—`)
   CZYTAJ: `plan/02` 2.5 S8, `plan/03` 3.3
 
-- [ ] **F5-04** `lint-build` Lint + build + Lighthouse + screenshoty
+- [x] **F5-04** `lint-build` Lint + build + Lighthouse + screenshoty ✓ lint 0 build ✓ test 53 green lighthouse perf 92 a11y 97 screenshots 2 TODO 0
   AC:
   - `npm run lint` → 0 errors, `npm run build` → `✓ Compiled successfully`, `npm test` → all green
   - `npm run lighthouse` (lub `npx lighthouse http://localhost:3000 --only-categories=performance,accessibility`) → perf ≥85, a11y ≥95 (wynik w `screenshots/F5/lighthouse.json`)

@@ -39,8 +39,9 @@ describe("api auth F3-02 prod vs dev", () => {
     vi.doMock("@/lib/check", () => ({
       checkCycle: vi.fn(async () => ({ changed: false, hash: "a".repeat(64), durationMs: 10, usedFallback: false })),
     }));
+    const { resetRateLimit } = await import("@/lib/rate-limit");
+    resetRateLimit();
     const mod = await import("@/app/api/check/route");
-    mod._resetRateLimit();
     const req = new Request("http://localhost:3000/api/check", { method: "POST" });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await mod.POST(req as any);
@@ -56,8 +57,9 @@ describe("api auth F3-02 prod vs dev", () => {
     vi.stubEnv("NODE_ENV", "production");
     process.env.CRON_SECRET = "test-secret";
     vi.resetModules();
+    const { resetRateLimit } = await import("@/lib/rate-limit");
+    resetRateLimit();
     const mod = await import("@/app/api/check/route");
-    mod._resetRateLimit();
     const req = new Request("http://localhost:3000/api/check", { method: "POST" });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await mod.POST(req as any);
@@ -76,8 +78,9 @@ describe("api auth F3-02 prod vs dev", () => {
       checkCycle: vi.fn(async () => ({ changed: false, hash: "a".repeat(64), durationMs: 10, usedFallback: false })),
     }));
     vi.resetModules();
+    const { resetRateLimit } = await import("@/lib/rate-limit");
+    resetRateLimit();
     const mod = await import("@/app/api/check/route");
-    mod._resetRateLimit();
     const req1 = new Request("http://localhost:3000/api/check", { method: "POST" });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res1 = await mod.POST(req1 as any);

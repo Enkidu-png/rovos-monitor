@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { buildEmailSubject, buildEmailHtml, canSendEmail, sendChangeNotification } from "./email";
 import { _resetStore, getEmailLog, pushEmailLog } from "./storage";
