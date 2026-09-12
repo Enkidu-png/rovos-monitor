@@ -119,7 +119,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Brzegowe: `getLastHash()` przy braku danych → `null` (nie error)
   CZYTAJ: `plan/03` 3.2, `plan/02` 2.2
 
-- [ ] **F1-06** `email` `email-service` nodemailer + rate-limit + templates
+- [x] **F1-06** `email` `email-service` nodemailer + rate-limit + templates ✓ vitest 7 passed (email.test.ts), subject 2026-09-11 10:00 UTC, snippet 500, rate-limit 60min, polish ąęć, build ✓
   AC:
   - `buildEmailSubject(new Date("2026-09-11T10:00:00Z"))` → `"Rovos Specials - wykryto zmiane - 2026-09-11 10:00 UTC"` (bez `—`, bez `·`)
   - `buildEmailHtml({ url, snippet: "a".repeat(600), hash })` → snippet skrócony do 500 znaków (`html.length` snippet part ≤500)
