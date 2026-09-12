@@ -152,7 +152,7 @@ DoD F2: `npm run build` bez błędów, `GET /` 200 SSR, `GET /api/health` 200 <1
   - Brzegowe: `prefers-reduced-motion` media query istnieje (`grep "prefers-reduced-motion" app/globals.css → 1`)
   CZYTAJ: `plan/02` 2.1, `plan/04` układ
 
-- [ ] **F2-02** `dashboard-skeleton` Dashboard `/` skeleton SSR (status card + history placeholder)
+- [x] **F2-02** `dashboard-skeleton` Dashboard `/` skeleton SSR (status card + history placeholder) ✓ curl Rovos Monitor 1 Ostatnie sprawdzenie 1 Hash 1 Brak danych 1, revalidate 60 ✓, build Compiled successfully, brak · — ✓ (curl 3001 dev)
   AC:
   - `GET /` SSR zawiera `Rovos Monitor`, `Ostatnie sprawdzenie`, `Hash` (nawet gdy `null` pokazuje "Brak danych") (`curl -s http://localhost:3000/ | grep "Rovos Monitor"` → 1)
   - `app/page.tsx` `export const revalidate = 60`, async `getLastCheck()` etc., fallback `Brak danych - pierwsze sprawdzenie w toku` gdy history 0 (Playwright)
