@@ -260,7 +260,7 @@ DoD F4: status card pokazuje `lastCheck`, `hash` 8 znaków + copy, history lista
 
 DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata, polskie znaki w mailu, `npm run lint` 0, screenshoty `screenshots/F5/`.
 
-- [ ] **F5-01** `perf` Budżety perf + bundle
+- [x] **F5-01** `perf` Budżety perf + bundle ✓ vitest perf 1ms <50, curl health 0.008s <0.1, cron mock 15ms <2000 (tests/cron.test.ts), build ✓ Compiled successfully gzipped largest chunk 71KB <120, no new deps >100KB
   AC:
   - `hashContent` 50KB bench <50ms (`npm run test -- tests/perf.test.ts` → `expect(duration).toBeLessThan(50)`)
   - `/api/health` <100ms (`curl -w %{time_total}` → <0.1), `/api/cron/check` mock <2000ms
