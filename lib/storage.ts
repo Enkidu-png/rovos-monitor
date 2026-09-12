@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, unlinkSync } from "fs";
 import { resolve } from "path";
 import { KVKeys, HistoryEntrySchema, EmailLogEntrySchema, type HistoryEntry, type EmailLogEntry } from "./schemas";
 
@@ -56,11 +56,15 @@ function writeStore(store: Store): void {
   const p = storePath();
   const tmp = p + ".tmp";
   writeFileSync(tmp, JSON.stringify(store, null, 2), "utf-8");
-  // atomic rename
-  writeFileSync(p, readFileSync(tmp, "utf-8"), "utf-8");
   try {
-    unlinkSync(tmp);
-  } catch {}
+    renameSync(tmp, p);
+  } catch {
+    // fallback if rename fails
+    writeFileSync(p, readFileSync(tmp, "utf-8"), "utf-8");
+    try {
+      unlinkSync(tmp);
+    } catch {}
+  }
 }
 
 // --- public API ---

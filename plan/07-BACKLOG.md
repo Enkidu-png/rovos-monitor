@@ -129,7 +129,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Brzegowe: `sendChangeNotification` z `snippet` zawierającym polskie znaki `ąęć` → HTML zawiera je poprawnie (UTF-8)
   CZYTAJ: `plan/03` 3.3, `plan/01` Z04, Z08
 
-- [ ] **F1-07** `playground` `/dev/scraper` playground (dev only)
+- [x] **F1-07** `playground` `/dev/scraper` playground (dev only) ✓ dev 200 contains Fetch+URL+selector, prod 404, POST /api/check 200 hash 64, no secret leak, build ƒ, screenshot placeholder
   AC:
   - `GET /dev/scraper` w `NODE_ENV=development` → 200, zawiera input URL, button Fetch, selector (Playwright `page.goto("http://localhost:3000/dev/scraper")` → visible)
   - `GET /dev/scraper` w `NODE_ENV=production` → 404 (`curl https://<prod>/dev/scraper` → 404)

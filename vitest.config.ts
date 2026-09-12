@@ -5,6 +5,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.test.ts", "**/*.test.tsx"],
+    sequence: { concurrent: false },
+    poolOptions: { forks: { singleFork: true } },
     coverage: {
       reporter: ["text", "json", "html"],
       provider: "v8",
