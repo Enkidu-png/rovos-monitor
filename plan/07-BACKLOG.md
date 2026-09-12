@@ -268,7 +268,7 @@ DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata
   - Negatywne: brak nowych zależności >100KB (`npm ls --prod | du` — nie rośnie o >100KB od F0)
   CZYTAJ: `plan/02` 2.4, `plan/03` 3.4
 
-- [ ] **F5-02** `seo-404` 404 + SEO/OG + robots
+- [x] **F5-02** `seo-404` 404 + SEO/OG + robots ✓ curl 404 Strona nie znaleziona 1 link / 1 og:title 1 robots 200 brak — border-left 0
   AC:
   - `GET /nonexistent` → 404, `app/not-found.tsx` renderuje `Strona nie znaleziona` + link do `/` (`curl -s http://localhost:3000/nonexistent | grep "nie znaleziona"` → 1)
   - `app/layout.tsx` metadata `title`, `description`, `openGraph` (`curl -s / | grep "og:title"` → 1)

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rovos-monitor.vercel.app/sitemap.xml
