@@ -168,7 +168,7 @@ DoD F2: `npm run build` bez błędów, `GET /` 200 SSR, `GET /api/health` 200 <1
   - Negatywne: nie wymaga auth (`curl` bez header → 200, nie 401)
   CZYTAJ: `plan/05` 05.4
 
-- [ ] **F2-04** `vercel-config` Weryfikacja `vercel.json` crons (next.config już w F0-01)
+- [x] **F2-04** `vercel-config` Weryfikacja `vercel.json` crons (next.config już w F0-01) ✓ path /api/cron/check schedule 0 * * * * maxDuration 10 grep playwright-core 2 brak sekretow, build ✓
   AC:
   - `cat vercel.json | jq .crons[0].path` → `"/api/cron/check"`, `jq .crons[0].schedule` → `"0 * * * *"`
   - `cat vercel.json | jq '.functions["app/api/cron/check/route.ts"].maxDuration'` → `10` (Hobby limit, Pro 30 w F7)
