@@ -81,7 +81,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Brzegowe: gdy `scrapeSpecials` zwraca `error`, `checkCycle` zapisuje `history` z `error` i nie wysyła maila
   CZYTAJ: `plan/03` 3.4, `plan/01` słownik check-cycle
 
-- [ ] **F1-02** `normalizer-hasher` `normalizeContent` + `hashContent` + `isCloudflareChallenge`
+- [x] **F1-02** `normalizer-hasher` `normalizeContent` + `hashContent` + `isCloudflareChallenge` ✓ vitest 8 passed (normalizer.test.ts), hash 2cf24... deterministyczny, perf <50ms, truncate 50KB, build ✓
   AC:
   - `normalizeContent` usuwa `script/style/nonce`, collapsuje whitespace, truncate 50KB — test: `normalizeContent('<main>  a  <script>x</script> b </main>')` → `"a b"` (vitest `expect(...).toBe("a b")`)
   - `hashContent("hello")` → `2cf24dba...` 64 hex (`expect(hash).toMatch(/^[a-f0-9]{64}$/)`), deterministyczny
