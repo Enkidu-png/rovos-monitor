@@ -191,7 +191,7 @@ DoD F3: `curl` cron z auth → 200 JSON `hash` 64, bez auth 401, manual POST dzi
   - Brzegowe: pierwszy run (`lastHash null`) → `{ changed: false, hash: "..." }` i nie wysyła maila (`emailLog` length 0)
   CZYTAJ: `plan/05` 05.2, `plan/03` 3.4
 
-- [ ] **F3-02** `manual-check` `POST /api/check` manual trigger + rate-limit
+- [x] **F3-02** `manual-check` `POST /api/check` manual trigger + rate-limit ✓ curl POST Bearer 200 hash64 changed bool, dev no auth 200, prod 401 via vitest tests/api-auth.test.ts, rate-limit 429 second 429, GET 405
   AC:
   - `curl -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/check | jq .changed` → boolean, `jq .hash` 64 hex
   - `curl -X POST http://localhost:3000/api/check` bez auth w prod → 401, w dev (`NODE_ENV=development`) → 200 (test z `NODE_ENV=development`)
