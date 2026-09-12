@@ -73,3 +73,19 @@ Env lokalny: `CRON_SECRET=dev-secret-12345-test` w `.env.local` (Vercel OIDC te�
 - Rate-limit distribuowany (in-memory Map reset na serverless) — tylko lokalny dev test.
 - Email SMTP wysyłka real (Gmail App Password) — w test/dev mock `mock-dev-no-creds`, prod wymaga `GMAIL_USER`/`GMAIL_APP_PASSWORD`.
 - Vercel prod cron schedule Hobby vs Pro — `vercel.json` vs `DECISIONS.md` niespójne.
+
+---
+
+## Poprawki review 2026-09-12 (commit fix-review-2026-09-12)
+
+Zweryfikowano na uruchomionej aplikacji po fixach (dev not needed, `npm run build` + `npm test` + grep):
+
+1. `next.config.ts` usuniety — `ls next.config.*` → tylko `next.config.mjs`, `npm run build` ✓ Compiled successfully.
+2. `ponytail:` usuniete — `grep -r "ponytail:" app/ lib/ --include="*.ts" --include="*.tsx" --include="*.css" | grep -v BACKLOG | grep -v DECISIONS | grep -v WERYFIKACJA` → `0`.
+3. `lib/email.ts` escapeHtml `'` → `&#39;` — `grep "&#39;" lib/email.ts` → `1`, `npm test -- lib/email.test.ts` 9 passed.
+4. `ManualCheckButton.tsx` onClick usuniety — `grep onClick app/components/ManualCheckButton.tsx` → `0`, `grep onSubmit` → `1`, `npm run build` ✓.
+5. `data/store.json` gitignored — `grep "data/store.json" .gitignore` → `1`, `git check-ignore -v data/store.json` → `.gitignore:46:data/store.json`, `git status` nie pokazuje `data/store.json`.
+6. `vercel.json` schedule `0 8 * * *` — `cat vercel.json | jq .crons[0].schedule` → `"0 8 * * *"` (ujednolicono z DECISIONS daily Hobby).
+7. `VERCEL_OIDC_TOKEN` rotacja — `grep VERCEL_OIDC_TOKEN DECISIONS.md` → `1`, `.env.local` chmod 600, gitignored.
+8. `lib/scraper.ts` usedFallback:true w catch cloudflare — `grep -A2 "catch" lib/scraper.ts` zawiera `usedFallback:true`, `npm test -- lib/scraper-playwright.test.ts` 4 passed.
+9. Final: `npm run lint` 0 errors, `npm run build` ✓ Compiled successfully, `npm test` 53 passed, `grep -r "TODO" app/ lib/` → `0`, `grep -r "ponytail:" app/ lib/` → `0`.
