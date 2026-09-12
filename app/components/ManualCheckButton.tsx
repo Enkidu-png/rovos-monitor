@@ -6,7 +6,6 @@ export default function ManualCheckButton() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // ponytail: show ?checked redirect message on load (no-JS fallback sync)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checked") === "1") {
@@ -47,11 +46,9 @@ export default function ManualCheckButton() {
 
   return (
     <div>
-      {/* ponytail: progressive enhancement - form works without JS, JS intercepts */}
       <form method="POST" action="/api/check" data-testid="manual-form" onSubmit={handleClick}>
         <button
           type="submit"
-          onClick={handleClick}
           disabled={loading}
           style={{
             height: "40px",

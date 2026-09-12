@@ -51,7 +51,6 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* ponytail: F4 dashboard grid responsive 1024 breakpoint 1col mobile 2col desktop */
 .dashboard-grid {
   display: grid;
   gap: var(--space-lg);

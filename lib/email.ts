@@ -15,7 +15,6 @@ export function buildEmailHtml(opts: { url: string; snippet: string; hash: strin
   const snippet = opts.snippet.slice(0, 500);
   const dash = opts.dashboardUrl || process.env.NEXT_PUBLIC_APP_URL || "https://rovos-monitor.vercel.app";
   const ts = new Date().toISOString();
-  // ponytail: utf-8 for Polish diacritics
   return `<div style="font-family:system-ui,sans-serif;max-width:600px;background:#fafaf7;padding:24px;border-radius:8px">
   <meta charset="utf-8">
   <h1 style="font-size:18px;color:#0f4a3a">Wykryto zmiane na Rovos Specials</h1>
@@ -33,7 +32,7 @@ export function buildEmailText(opts: { url: string; snippet: string; hash: strin
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 export async function canSendEmail(): Promise<boolean> {

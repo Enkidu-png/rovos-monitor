@@ -1,4 +1,3 @@
-// ponytail: skeleton SSR revalidate 60, storage via lib/storage, tokeny CSS only
 import { getLastCheck, getLastHash, getHistory } from "@/lib/storage";
 import HistoryList from "./components/HistoryList";
 import ManualCheckButton from "./components/ManualCheckButton";

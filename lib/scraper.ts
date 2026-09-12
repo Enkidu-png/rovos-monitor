@@ -51,7 +51,6 @@ export async function scrapeSpecials(
   }
 
   // fallback: playwright
-  // ponytail: lazy import only in fallback branch
   try {
     const chromium = (await import("@sparticuz/chromium")).default;
     const { chromium: pw } = await import("playwright-core");
@@ -76,7 +75,7 @@ export async function scrapeSpecials(
   } catch (e) {
     const msg = e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500);
     if (sawCloudflare || msg.includes("cloudflare")) {
-      return { content: null, error: "cloudflare-challenge", durationMs: Date.now() - start, usedFallback: false };
+      return { content: null, error: "cloudflare-challenge", durationMs: Date.now() - start, usedFallback: true };
     }
     return { content: null, error: msg, durationMs: Date.now() - start, usedFallback: true };
   }
