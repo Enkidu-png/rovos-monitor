@@ -72,7 +72,7 @@ DoD F0: `npm run dev` startuje na 3000, `npm test` zielone (min 1 test), `npm ru
 
 DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground `/dev/scraper` działa w dev i 404 w prod, `npm run test -- --coverage` ≥70%, screenshot `screenshots/F1/`.
 
-- [ ] **F1-01** `⚠ HARD` `check-cycle` Kompozycja systemów (scrape→hash→compare→store→notify) — na początku fazy (świeże okno) lub osobna mini-paczka bez `model: opus`
+- [x] **F1-01** `⚠ HARD` `check-cycle` Kompozycja systemów (scrape→hash→compare→store→notify) — na początku fazy (świeże okno) lub osobna mini-paczka bez `model: opus` ✓ vitest 5 passed (check.test.ts), manual integration promo A/B duration 4/0ms <2000 snippet 7, build ✓, lint 0
   AC:
   - Funkcja `checkCycle()` w `lib/check.ts` (lub w route) łączy wszystkie: mock `scrapeSpecials` → `"promo A"` hash1, `getLastHash null` → `changed false`, nie wysyła maila (test `expect(sendMock).not.toHaveBeenCalled()`)
   - Drugi call z `"promo B"` → `changed true`, `sendMock` called z `to: "js@architekton.gda.pl"` (`expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ to: "js@architekton.gda.pl" }))`)
