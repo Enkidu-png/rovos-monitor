@@ -25,12 +25,29 @@ export async function POST(req: Request) {
   const ip = getClientIp(req);
   const now = Date.now();
   const last = rateLimitMap.get(ip);
+  const isForm =
+    req.headers.get("content-type")?.includes("application/x-www-form-urlencoded") ||
+    req.headers.get("content-type")?.includes("multipart/form-data") ||
+    req.headers.get("accept")?.includes("text/html");
   if (last !== undefined && now - last < RATE_WINDOW_MS) {
+    if (isForm) {
+      const url = new URL("/", req.url);
+      url.searchParams.set("checked", "1");
+      url.searchParams.set("error", "rate-limited");
+      return NextResponse.redirect(url, 303);
+    }
     return NextResponse.json({ error: "rate-limited, try in 30s" }, { status: 429 });
   }
   rateLimitMap.set(ip, now);
   try {
     const result = await checkCycle();
+    if (isForm) {
+      const url = new URL("/", req.url);
+      url.searchParams.set("checked", "1");
+      url.searchParams.set("changed", String(result.changed));
+      url.searchParams.set("hash", result.hash.slice(0, 8));
+      return NextResponse.redirect(url, 303);
+    }
     return NextResponse.json({
       changed: result.changed,
       hash: result.hash,
@@ -41,6 +58,12 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    if (isForm) {
+      const url = new URL("/", req.url);
+      url.searchParams.set("checked", "1");
+      url.searchParams.set("error", msg.slice(0, 100));
+      return NextResponse.redirect(url, 303);
+    }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
