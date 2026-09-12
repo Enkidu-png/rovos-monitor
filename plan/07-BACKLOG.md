@@ -100,7 +100,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Negatywne: nie używa `axios` (`grep axios lib/scraper.ts → 0`), nie rzuca wyjątkiem na error — zwraca `{ error }`
   CZYTAJ: `plan/03` 3.1, `plan/01` Z07
 
-- [ ] **F1-04** `scraper-playwright` Fallback `playwright-core` + `@sparticuz/chromium`
+- [x] **F1-04** `scraper-playwright` Fallback `playwright-core` + `@sparticuz/chromium` ✓ vitest 4 passed (scraper-playwright.test.ts), usedFallback true, lazy import, build ✓
   AC:
   - Gdy `fetch` wykryje challenge, funkcja próbuje `chromium.launch` (mock w teście: `vi.mock("playwright-core")` → zwraca `<main>after-challenge</main>`)
   - `usedFallback: true` gdy playwright użyty, `content` poprawny
