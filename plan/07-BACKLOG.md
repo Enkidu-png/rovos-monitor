@@ -160,7 +160,7 @@ DoD F2: `npm run build` bez błędów, `GET /` 200 SSR, `GET /api/health` 200 <1
   - Negatywne: brak `·` między metadanymi (`grep "·" app/page.tsx → 0`), brak `—` w copy (`grep "—" app/page.tsx → 0`)
   CZYTAJ: `plan/04` całość
 
-- [ ] **F2-03** `health` `GET /api/health` publiczny
+- [x] **F2-03** `health` `GET /api/health` publiczny ✓ curl ok true historyLength 0 time 0.003s <100ms POST 405 200 bez auth (dev 3001)
   AC:
   - `curl -s http://localhost:3000/api/health | jq .ok` → `true`, `jq .lastCheck` istnieje, `jq .historyLength` number
   - Response <100ms (`curl -w %{time_total} -o /dev/null -s http://localhost:3000/api/health` → <0.1)
