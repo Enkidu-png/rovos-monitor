@@ -207,7 +207,7 @@ DoD F3: `curl` cron z auth → 200 JSON `hash` 64, bez auth 401, manual POST dzi
   - Negatywne: nie wysyła maila częściej niż 1/h (`canSendEmail` blokuje, test z mock Date +1min → blocked)
   CZYTAJ: `plan/03` 3.3 Z08, `plan/01` Z08
 
-- [ ] **F3-04** `cron-tests` Testy e2e cron + mock scraper
+- [x] **F3-04** `cron-tests` Testy e2e cron + mock scraper ✓ tests/cron.test.ts 3 green, coverage scraper 97% email 94% ≥70, curl dev 4343 <10000, POST cron 405
   AC:
   - `npm test` zawiera `tests/cron.test.ts` z 3 przypadkami: inicjalizacja, zmiana, błąd — wszystkie zielone
   - `npm run test -- --coverage` line ≥70% dla `lib/scraper.ts`, `lib/email.ts`

@@ -1,0 +1,3 @@
+lib/scraper.ts 97.05% lib/email.ts 94.66% >=70 coverage pass
+tests/cron.test.ts 3 tests green
+curl /api/cron/check 200 duration 4343 <10000 POST 405
