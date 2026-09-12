@@ -292,7 +292,7 @@ DoD F5: Lighthouse perf ≥85, a11y ≥95, `not-found.tsx` działa, SEO metadata
   - Negatywne: `grep -r "TODO" app/ lib/ --include="*.ts" --include="*.tsx" | grep -v "BACKLOG" → 0` (brak TODO w kodzie)
   CZYTAJ: `plan/01` Z10, `plan/04` DoD
 
-- [ ] **F5-05** `docs` Docs + env instrukcja + deploy preview
+- [x] **F5-05** `docs` Docs + env instrukcja + deploy preview ✓ README grep 1 DECISIONS zawiera deploy preview curl 200 200 brak sekretow
   AC:
   - `README.md` zawiera: jak ustawić `GMAIL_APP_PASSWORD`, `UPSTASH_REDIS_REST_URL`, `CRON_SECRET`, `vercel env add`, `vercel --prod` (sprawdź `grep "GMAIL_APP_PASSWORD" README.md → 1`)
   - `DECISIONS.md` zawiera decyzje otwarte z `01` (mail diff vs snippet, PDF monitoring)

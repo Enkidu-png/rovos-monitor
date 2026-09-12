@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rovos Monitor
 
-## Getting Started
+Monitoring https://rovos.com/journeys/specials/ - wykrywanie zmian ofert Rovos Rail. Cron co 60 min, hash SHA256, mail na js@architekton.gda.pl, dashboard status.
 
-First, run the development server:
+## Env - wymagane zmienne
+
+Wszystkie sekrety tylko via env, nigdy w repo (Z06).
+
+| Zmienna | Przeznaczenie |
+|---------|---------------|
+| `UPSTASH_REDIS_REST_URL` | Vercel Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Vercel Redis REST TOKEN |
+| `GMAIL_USER` | Gmail SMTP user |
+| `GMAIL_APP_PASSWORD` | Gmail App Password (16 znakow) |
+| `CRON_SECRET` | Cron auth Bearer token |
+| `NEXT_PUBLIC_APP_URL` | URL aplikacji |
+
+Plik wzorcowy: `.env.example` zawiera puste klucze bez wartosci. Lokalnie skopiuj do `.env.local` (gitignored).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
+# uzupelnij GMAIL_APP_PASSWORD, UPSTASH_REDIS_REST_URL, CRON_SECRET
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Vercel env
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+vercel env add UPSTASH_REDIS_REST_URL
+vercel env add UPSTASH_REDIS_REST_TOKEN
+vercel env add GMAIL_USER
+vercel env add GMAIL_APP_PASSWORD
+vercel env add CRON_SECRET
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Wersja produkcyjna Hobby: `vercel.json` cron `0 8 * * *` (daily, limit Hobby). Hourly `0 * * * *` wymaga Pro - decyzja w F7.
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build # musi zakonczyc ✓ Compiled successfully
+vercel --prod # deploy produkcyjny
+# preview
+vercel # deploy preview - sprawdź curl
+curl https://rovos-monitor.vercel.app/api/health # 200 { ok: true }
+curl https://rovos-monitor.vercel.app/ # 200
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Lokalny preview:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev # http://localhost:3000
+curl http://localhost:3000/api/health | jq .ok # true
+curl http://localhost:3000/ | grep "Rovos Monitor"
+```
 
-## Deploy on Vercel
+## Testy i jakosc
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run lint # 0 errors
+npm test # all green
+npm run test -- --coverage # >=70%
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Budzety: hashContent 50KB <50ms, /api/health <100ms, /api/cron/check <2000ms mock <10000ms z playwright.
+
+## Stack
+
+Next.js 16.3.4 App Router, TypeScript strict, Tailwind tokeny CSS, zod, vitest, nodemailer, @upstash/redis, cheerio, playwright-core + @sparticuz/chromium.
+
+## Cron
+
+GET /api/cron/check wymaga `Authorization: Bearer $CRON_SECRET`, zwraca `{ changed, hash, durationMs }`.
+
+## Dashboard
+
+GET / - SSR revalidate 60s, status card + history, przycisk Sprawdz teraz.
+
+## Licencja
+
+Prywatny projekt Enkidu-png/rovos-monitor.
