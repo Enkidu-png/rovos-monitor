@@ -109,7 +109,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Negatywne: brak `puppeteer` w `package.json`, `next.config.mjs` już ma `serverComponentsExternalPackages` z `playwright-core` (z F0-01)
   CZYTAJ: `plan/03` 3.1, `plan/02` 2.3
 
-- [ ] **F1-05** `storage` `storage-adapter` KV/file + FIFO 100
+- [x] **F1-05** `storage` `storage-adapter` KV/file + FIFO 100 ✓ vitest 7 passed (storage.test.ts), FIFO 100, zod filter, file fallback, build ✓
   AC:
   - `setLastHash("abc...64")` → `getLastHash()` → `"abc..."` (vitest z `KV` mock lub file `data/store.json`)
   - `pushHistory` 101 wpisów → `getHistory().length === 100`, pierwszy to najnowszy (FIFO)
