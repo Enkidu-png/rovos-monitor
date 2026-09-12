@@ -221,7 +221,7 @@ DoD F3: `curl` cron z auth → 200 JSON `hash` 64, bez auth 401, manual POST dzi
 
 DoD F4: status card pokazuje `lastCheck`, `hash` 8 znaków + copy, history lista z `history-reveal`, przycisk Sprawdź teraz + toast, Lighthouse perf ≥85, screenshot desktop+mobile `screenshots/F4/`.
 
-- [ ] **F4-01** `status-card` Status card (lastCheck, hash, nextCheck)
+- [x] **F4-01** `status-card` Status card (lastCheck, hash, nextCheck) ✓ playwright page.goto visible 2026-09-12 09:36 UTC hash 30925f46 len8 next 10:36 +60min curl var(--color-surface) 1 border-left 0 screenshots/F4/dashboard-1280.png
   AC:
   - Playwright `page.goto("/")` → status card widoczny, `lastCheck` format `YYYY-MM-DD HH:mm UTC` lub `Brak danych`, `hashPrefix` 8 znaków (`page.locator("[data-testid=status-hash]")` → text length 8 lub "-")
   - `nextCheck` = `lastCheck + 60min` lub `za <60 min` (obliczone)
@@ -229,7 +229,7 @@ DoD F4: status card pokazuje `lastCheck`, `hash` 8 znaków + copy, history lista
   - Negatywne: brak `border-left` na karcie (`grep "border-left" app/page.tsx → 0`)
   CZYTAJ: `plan/04` układ, `plan/02` 2.1
 
-- [ ] **F4-02** `history` History list + history-reveal + copy hash
+- [x] **F4-02** `history` History list + history-reveal + copy hash ✓ playwright count 3 hover 0.15s click snippet 500 hash64 clipboard 64 hex brak · screenshots/F4/history-reveal.png
   AC:
   - `page.goto("/")` → lista history `data-testid=history-item` count = `historyLength`, hover zmienia bg w 150ms (screenshot before/after)
   - Klik wpis → rozwija snippet 500 znaków + pełny hash 64 + durationMs (`page.click(historyItem)` → `locator("[data-testid=snippet]")` visible)
@@ -237,7 +237,7 @@ DoD F4: status card pokazuje `lastCheck`, `hash` 8 znaków + copy, history lista
   - Negatywne: brak `·` między datą a hashem (`page.content()` nie zawiera `·`)
   CZYTAJ: `plan/04` tabela S3
 
-- [ ] **F4-03** `manual-button` Przycisk Sprawdź teraz + toast + form fallback
+- [x] **F4-03** `manual-button` Przycisk Sprawdź teraz + toast + form fallback ✓ playwright disabled spinner 20x20 0.8s toast Sprawdzono: changed false 3000ms role=status rate-limited curl POST 303 ?checked=1 brak — screenshots/F4/dashboard-1280.png
   AC:
   - Klik "Sprawdź teraz" → POST `/api/check` z auth (w dev bez), przycisk `disabled` + spinner 20×20 800ms, po odpowiedzi toast `Sprawdzono: changed true/false` widoczny 3000ms (`page.locator("[role=status]")` visible)
   - Bez JS (`page.setJavaScriptEnabled(false)` + `page.goto("/")` → form POST działa, redirect `?checked=1` zawiera wynik)
@@ -245,7 +245,7 @@ DoD F4: status card pokazuje `lastCheck`, `hash` 8 znaków + copy, history lista
   - Negatywne: brak `—` w toast copy (`toast` text nie zawiera `—`)
   CZYTAJ: `plan/04` S3, `plan/05` 05.3
 
-- [ ] **F4-04** `responsive-a11y` Responsive + a11y + reduced-motion
+- [x] **F4-04** `responsive-a11y` Responsive + a11y + reduced-motion ✓ playwright desktop 444px 2col mobile 327px 1col Tab outline 2px solid rgb(15,74,58) reducedMotion 0s lighthouse a11y 1.0 screenshots/F4/dashboard-375.png
   AC:
   - Desktop 1280×800: dwukolumna, Mobile 375×812: jedna kolumna (Playwright `page.setViewportSize` + screenshot diff)
   - Tab fokus: `outline: 2px solid var(--color-accent)` widoczny (`page.keyboard.press("Tab")` → focused element `outline-color`)
