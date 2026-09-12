@@ -91,7 +91,7 @@ DoD F1: wszystkie moduły `lib/*` mają `*.test.ts` coverage ≥70%, playground 
   - Brzegowe: `normalizeContent("", "main")` → `""`, `hashContent("")` → znany SHA256 pustego stringa `e3b0c...`
   CZYTAJ: `plan/03` sekcja 3.1, `plan/01` Z01
 
-- [ ] **F1-03** `scraper-fetch` `scrapeSpecials` — fetch + retry + cloudflare detection (bez playwright)
+- [x] **F1-03** `scraper-fetch` `scrapeSpecials` — fetch + retry + cloudflare detection (bez playwright) ✓ vitest 5 passed (scraper.test.ts), retry 4007ms, cloudflare error, AbortSignal.timeout 1, build ✓
   AC:
   - Mock `fetch` → HTML `<main>promo</main>` → `{ content: "promo", error: undefined, durationMs: <2000, usedFallback: false }` (vitest `vi.spyOn(global, "fetch")`)
   - Retry: `fetch` rzuca 2× → 3. próba sukces → `content` istnieje, `durationMs` ≥4000 (2×2000 delay)

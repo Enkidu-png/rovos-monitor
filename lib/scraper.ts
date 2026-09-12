@@ -26,6 +26,7 @@ export async function scrapeSpecials(
   const timeoutMs = opts?.timeoutMs ?? TIMEOUT;
   const start = Date.now();
 
+  let sawCloudflare = false;
   for (let attempt = 1; attempt <= RETRY; attempt++) {
     try {
       const res = await fetch(target, {
@@ -37,11 +38,13 @@ export async function scrapeSpecials(
       });
       const html = await res.text();
       if (isCloudflareChallenge(html)) {
+        sawCloudflare = true;
         throw new Error("cloudflare-challenge");
       }
       const content = normalizeContent(html, selector);
       return { content, durationMs: Date.now() - start, usedFallback: false };
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message.includes("cloudflare")) sawCloudflare = true;
       if (attempt === RETRY) break;
       await sleep(RETRY_DELAY);
     }
@@ -72,8 +75,7 @@ export async function scrapeSpecials(
     return { content, durationMs: Date.now() - start, usedFallback: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500);
-    // if error is our cloudflare challenge, normalize
-    if (msg.includes("cloudflare")) {
+    if (sawCloudflare || msg.includes("cloudflare")) {
       return { content: null, error: "cloudflare-challenge", durationMs: Date.now() - start, usedFallback: false };
     }
     return { content: null, error: msg, durationMs: Date.now() - start, usedFallback: true };
