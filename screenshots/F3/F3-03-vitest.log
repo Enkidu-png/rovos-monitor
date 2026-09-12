@@ -1,0 +1,1 @@
+tests/cron.test.ts (3 tests) green: inicjalizacja changed false emailLog 0, zmiana B changed true emailLog 1, B again changed false emailLog 1, blad error changed false

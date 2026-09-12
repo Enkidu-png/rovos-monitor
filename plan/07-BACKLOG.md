@@ -199,7 +199,7 @@ DoD F3: `curl` cron z auth → 200 JSON `hash` 64, bez auth 401, manual POST dzi
   - Negatywne: `GET /api/check` → 405
   CZYTAJ: `plan/05` 05.3
 
-- [ ] **F3-03** `email-dedup` Email dedup + history log + error handling
+- [x] **F3-03** `email-dedup` Email dedup + history log + error handling ✓ vitest tests/cron.test.ts 3 cases green, lib/email.test.ts rate-limit 60min, dedup via checkCycle mock A/B/B error
   AC:
   - Mock `scrapeSpecials` zwraca `content: "A"` hash1, `checkCycle` zapisuje `history[0].changed false`, `emailLog` 0; drugi `content: "B"` → `changed true`, `emailLog` length 1, `history[0].changed true`
   - Trzeci call z `"B"` (brak zmiany) → `changed false`, `emailLog` nadal 1 (nie wysyła ponownie)
