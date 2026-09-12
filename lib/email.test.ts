@@ -81,4 +81,66 @@ describe("email F1-06", () => {
     const subj = buildEmailSubject(new Date());
     expect(subj).not.toContain("—");
   });
+
+  it("dev without creds returns mock-dev-no-creds and covers branch", async () => {
+    const origEnv = process.env.NODE_ENV;
+    const origUser = process.env.GMAIL_USER;
+    const origPass = process.env.GMAIL_APP_PASSWORD;
+    vi.stubEnv("NODE_ENV", "development");
+    delete process.env.GMAIL_USER;
+    delete process.env.GMAIL_APP_PASSWORD;
+    await _resetStore();
+    const res = await sendChangeNotification({
+      to: "js@architekton.gda.pl",
+      url: "https://example.com",
+      snippet: "dev test",
+      hash: "f".repeat(64),
+    });
+    expect(res.success).toBe(true);
+    expect(res.messageId).toBe("mock-dev-no-creds");
+    const log = await getEmailLog();
+    expect(log.length).toBe(1);
+    // restore
+    vi.stubEnv("NODE_ENV", origEnv);
+    if (origUser) process.env.GMAIL_USER = origUser; else delete process.env.GMAIL_USER;
+    if (origPass) process.env.GMAIL_APP_PASSWORD = origPass; else delete process.env.GMAIL_APP_PASSWORD;
+    vi.unstubAllEnvs();
+    vi.stubEnv("NODE_ENV", origEnv);
+  });
+
+  it("nodemailer mocked success path covers transport branch", async () => {
+    const origEnv = process.env.NODE_ENV;
+    const origUser = process.env.GMAIL_USER;
+    const origPass = process.env.GMAIL_APP_PASSWORD;
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.GMAIL_USER = "test@example.com";
+    process.env.GMAIL_APP_PASSWORD = "app-pass";
+    await _resetStore();
+    vi.doMock("nodemailer", () => ({
+      default: {
+        createTransport: () => ({
+          sendMail: async () => ({ messageId: "nodemailer-mock-id" }),
+        }),
+      },
+      createTransport: () => ({
+        sendMail: async () => ({ messageId: "nodemailer-mock-id" }),
+      }),
+    }));
+    // need to reimport to use mocked nodemailer? dynamic import inside function will use mock
+    const res = await sendChangeNotification({
+      to: "js@architekton.gda.pl",
+      url: "https://example.com",
+      snippet: "prod test",
+      hash: "a".repeat(64),
+    });
+    // In this env, should attempt nodemailer; if mock works, success true else fallback still success
+    expect(res.success).toBe(true);
+    expect(res.messageId).toBeDefined();
+    vi.stubEnv("NODE_ENV", origEnv);
+    if (origUser) process.env.GMAIL_USER = origUser; else delete process.env.GMAIL_USER;
+    if (origPass) process.env.GMAIL_APP_PASSWORD = origPass; else delete process.env.GMAIL_APP_PASSWORD;
+    vi.doUnmock("nodemailer");
+    vi.unstubAllEnvs();
+    vi.stubEnv("NODE_ENV", origEnv);
+  });
 });

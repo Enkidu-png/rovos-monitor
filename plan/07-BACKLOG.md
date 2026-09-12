@@ -182,7 +182,7 @@ DoD F2: `npm run build` bez błędów, `GET /` 200 SSR, `GET /api/health` 200 <1
 
 DoD F3: `curl` cron z auth → 200 JSON `hash` 64, bez auth 401, manual POST działa, mail wysłany tylko przy zmianie, history FIFO, screenshot `screenshots/F3/`.
 
-- [ ] **F3-01** `cron-check` `GET /api/cron/check` + auth + check-cycle
+- [x] **F3-01** `cron-check` `GET /api/cron/check` + auth + check-cycle ✓ curl Bearer 200 hash 64 duration 4343 <10000, 401 bez auth, 401 x-vercel-cron alone, secret leak 0, emailLog 0 screenshots/F3/curl-F3-01.json
   AC:
   - `curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/check | jq .hash | grep -E "^\"[a-f0-9]{64}\"$"` → match, `jq .durationMs` <2000 (mock fetch) lub <10000 (playwright)
   - `curl http://localhost:3000/api/cron/check` bez header i bez `x-vercel-cron` → 401 `{ error: "unauthorized" }`
