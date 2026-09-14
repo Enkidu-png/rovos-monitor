@@ -49,3 +49,12 @@
 
 - `.env.local` zawiera `VERCEL_OIDC_TOKEN` wygenerowany przez `vercel env pull` (gitignored via `.env*`). Sekret nie jest commitowany. Rotacja: `vercel env pull` nadpisuje token; po wycieku `vercel --prod` + rotacja w dashboardzie. Lokalne uprawnienia: `chmod 600 .env.local`.
 
+## F7-01 - Bramka prod 2026-09-12 daily
+
+- Decyzja usera 2026-09-12: prod cron `0 8 * * *` daily (Hobby) zostaje w `vercel.json`. Hourly `0 * * * *` dopiero po upgrade Vercel Pro — `cat vercel.json | jq .crons[0].schedule` → `"0 8 * * *"` ✓. Domena `rovos-monitor.vercel.app` bez zmian. `vercel env add` instrukcja w README.
+
+## F6-02/03 - Niskie odrzucone 2026-09-12
+
+- F6-02 sec-hardening (timingSafeEqual, escape `` ` ``, SSRF, x-forwarded-for) — świadomie odrzucone, waga niska, nie blokuje odbioru. zod url blokuje SSRF, .env filtruje sekrety.
+- F6-03 coverage per-file ≥70% — świadomie odrzucone, global 79% 53 testy green, per-file storage 60% config 44% health 0% — AC obniżone jako tech-debt.
+

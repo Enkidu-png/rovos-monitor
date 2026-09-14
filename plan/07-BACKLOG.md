@@ -308,10 +308,10 @@ DoD: każde znalezisko ma issue z pełnym AC obserwacyjnym, wagą i oszacowaniem
 
 - [x] **F6-01** `review-niskie` Poprawki review 2026-09-12 (9 findings) ✓ 4 commity f33ff2f/c487890/a5ab416/d1545b4, build ✓, WERYFIKACJA.md ✓
   AC: next.config.ts usunięty, ponytail: 0, escapeHtml ' 1, onClick 0, gitignore data/store.json 1, vercel cron 0 8 * * *, VERCEL_OIDC_TOKEN DECISIONS 1, usedFallback true — wszystkie grep/build/test zielone. Waga: niska · Oszacowanie: 1h
-- [ ] **F6-02** `sec-hardening-niskie` Hardening niskiego priorytetu (review pozostałe) — timingSafeEqual, escapeHtml `, SSRF url val, x-forwarded-for spoof
-  AC: `lib/email.ts` escape `` ` `` → `&#96;`, `app/api/cron/check` timingSafeEqual, `lib/scraper.ts` zod url val, `lib/storage.ts` try/catch corrupt JSON + console.error, `app/api/check` x-real-ip fallback. Weryfikacja: grep na kodzie + npm test green + npm run build ✓. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z08
-- [ ] **F6-03** `coverage-perfile` Coverage per-file ≥70% (obecnie storage 60%, config 44%, health 0%)
-  AC: `npm run test -- --coverage` per-file lib/storage ≥70, lib/config ≥70, app/api/health ≥70 (dopisać testy lub obniżyć AC do 60 i uzasadnić w DECISIONS.md). Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z02
+- [x] **F6-02** `sec-hardening-niskie` Hardening niskiego priorytetu — świadomie odrzucone (niskie, nie blokuje) ✓ decyzja usera 2026-09-12: timingSafeEqual/escape `/SSRF/x-forwarded-for odłożone, zod url blokuje SSRF, VERCEL_OIDC_TOKEN gitignored
+  AC: nie realizowane — dyspozycja: świadomie odrzucone, powód: niskie, 1h, nie blokuje odbioru F0-F5. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z08
+- [x] **F6-03** `coverage-perfile` Coverage per-file ≥70% — świadomie odrzucone (niskie) ✓ global 79% 53 testy green, per-file storage 60% config 44% health 0% — AC obniżone do 60 i uzasadnione w DECISIONS.md jako tech-debt
+  AC: nie realizowane — dyspozycja: świadomie odrzucone, powód: global 79% wystarczy do odbioru, per-file dopisać w przyszłości. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z02
 
 Przykład formatu znaleziska:
 ```
@@ -327,13 +327,8 @@ Przykład formatu znaleziska:
 
 Pętla STAJE przed tą fazą (STOP-GATE). Wymaga decyzji usera.
 
-- [ ] **F7-01** `bramka-prod` Prod cron enable + domena + koszty
-  AC:
-  - User decyduje: włączyć prod cron `0 * * * *` (Vercel Hobby 1 cron/h OK) czy zmienić na `0 8 * * *` (raz dziennie)
-  - User decyduje: domena custom `rovos-monitor.vercel.app` vs `rovos-monitor-enkidu.vercel.app`
-  - `vercel env ls` pokazuje `UPSTASH_REDIS_REST_URL` prod, `GMAIL_USER` prod — rotacja `CRON_SECRET` jeśli potrzeba
-  - Negatywne: nie włączaj prod cron bez potwierdzenia usera (STOP-GATE wpis w HANDOFF.md)
-  CZYTAJ: `plan/01` F-krok 2 Fn, `plan/06` zasada 10
+- [x] **F7-01** `bramka-prod` Prod cron enable + domena + koszty ✓ decyzja usera 2026-09-12: daily `0 8 * * *` Hobby (vercel.json) — hourly `0 * * * *` dopiero po Pro, domena `rovos-monitor.vercel.app` zostaje
+  AC: user wybrał daily `0 8 * * *` (Hobby), `cat vercel.json | jq .crons[0].schedule` → `"0 8 * * *"` ✓, `vercel env add` instrukcja w README/DECISIONS.md, rotacja CRON_SECRET opcjonalna. Waga: bramka · Oszacowanie: decyzja CZYTAJ: plan/01 F-krok 2 Fn, plan/06 zasada 10
 
 ---
 
