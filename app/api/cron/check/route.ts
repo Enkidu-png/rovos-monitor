@@ -9,7 +9,10 @@ function isAuthorized(req: Request): boolean {
   const auth = req.headers.get("authorization");
   const expected = process.env.CRON_SECRET;
   if (!expected) return false;
-  return auth === `Bearer ${expected}`;
+  if (auth === `Bearer ${expected}`) return true;
+  // Vercel Cron sends x-vercel-cron: 1 without Bearer — trust Vercel
+  if (req.headers.get("x-vercel-cron") === "1") return true;
+  return false;
 }
 
 export async function GET(req: Request) {
