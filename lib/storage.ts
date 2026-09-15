@@ -83,8 +83,16 @@ async function readBlobStore(): Promise<Store> {
     try {
       await head(found.url);
     } catch {}
-    const res = await fetch(found.url);
-    if (!res.ok) return emptyStore();
+    // Private store: url needs auth, downloadUrl has token
+    const url = (found as unknown as { downloadUrl?: string }).downloadUrl || found.url;
+    let res = await fetch(url);
+    if (!res.ok) {
+      const token = process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_OIDC_TOKEN || "";
+      if (token) {
+        res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return emptyStore();
+      } else return emptyStore();
+    }
     const text = await res.text();
     const parsed = JSON.parse(text);
     return normalizeStore(parsed);
@@ -95,7 +103,7 @@ async function readBlobStore(): Promise<Store> {
 
 async function writeBlobStore(store: Store): Promise<void> {
   await put(BLOB_PATHNAME, JSON.stringify(store), {
-    access: "public",
+    access: "private",
     allowOverwrite: true,
     addRandomSuffix: false,
   } as never);
