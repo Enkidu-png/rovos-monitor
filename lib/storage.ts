@@ -95,7 +95,7 @@ async function readBlobStore(): Promise<Store> {
 
 async function writeBlobStore(store: Store): Promise<void> {
   await put(BLOB_PATHNAME, JSON.stringify(store), {
-    access: "private",
+    access: "public",
     allowOverwrite: true,
     addRandomSuffix: false,
   } as never);
