@@ -8,9 +8,9 @@
 
 ## Stan repo
 
-- `main` — F0-F7 ukończone (33 issues: F0 6 + F1 7 + F2 4 + F3 4 + F4 4 + F5 5 + F6 3 + F7 1), review + WERYFIKACJA.md ✓, bramka daily potwierdzona `6601b46`. `npm run build` ✓ Compiled successfully, `npm test` 53 passed, `npm run lint` 0 errors, `vercel --prod` Ready https://rovos-monitor.vercel.app
-- `git log` — `6601b46 bramka: F7-01 daily`, `7c61337 handoff: STOP-GATE`, `d1545b4 fix(review-9)`, `5a5d1df review: WERYFIKACJA.md`, `2678a03 F5-05` .. `2455d2a F0-01` — `git push` clean
-- `BACKLOG.md` — 33 issues ukończonych [x] F0-01..F7-01, zero [ ] — DoD F0-F7 spełnione (F6-02/03 świadomie odrzucone, F7 daily)
+- `main` — F0-F7 ukończone + F6-04 Blob (34 issues: F0 6 + F1 7 + F2 4 + F3 4 + F4 4 + F5 5 + F6 4 + F7 1), review + WERYFIKACJA.md ✓, bramka daily `6601b46`, Blob `5dee7d7`. `npm run build` ✓ Compiled successfully, `npm test` 53 passed, `npm run lint` 0 errors, `vercel --prod` Ready https://rovos-monitor.vercel.app
+- `git log` — `5dee7d7 F6-04 Blob`, `7910052 handoff zakonczony`, `6601b46 bramka daily`, `d1545b4 fix(review-9)`, `5a5d1df review` .. `2455d2a F0-01` — `git push` clean
+- `BACKLOG.md` — 34 issues ukończonych [x] F0-01..F7-01 + F6-04, zero real [ ] (1 przykład w bloku kodu ignorowany) — DoD F0-F7 spełnione, Blob file fallback ✓ / Vercel Blob `BLOB_READ_WRITE_TOKEN`
 - DoD F0-F7: `npm run dev` 200 ✓, `npm test` 53 passed ✓, `npm run build` ✓, `vercel.json` cron `0 8 * * *` Hobby daily ✓, WERYFIKACJA.md 75 linii ✓
 
 ## Ukończone issues
@@ -21,7 +21,7 @@
 - `F3-01 cron-check` ✓ `F3-02 manual-check` ✓ `F3-03 email-dedup` ✓ `F3-04 cron-tests` ✓
 - `F4-01 status-card` ✓ `F4-02 history` ✓ `F4-03 manual-button` ✓ `F4-04 responsive-a11y` ✓
 - `F5-01 perf` ✓ `F5-02 seo-404` ✓ `F5-03 diacritics` ✓ `F5-04 lint-build` ✓ `F5-05 docs` ✓
-- `F6-01 review-niskie` ✓ `F6-02 sec-hardening-niskie` ✓ świadomie odrzucone `F6-03 coverage-perfile` ✓ świadomie odrzucone
+- `F6-01 review-niskie` ✓ `F6-02 sec-hardening-niskie` ✓ świadomie odrzucone `F6-03 coverage-perfile` ✓ świadomie odrzucone `F6-04 blob-storage` ✓ Redis→Blob `@vercel/blob` 2.8.0, file fallback FIFO 100
 - `F7-01 bramka-prod` ✓ daily `0 8 * * *` Hobby potwierdzone 2026-09-12
 
 ## Następne issue
