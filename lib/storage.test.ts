@@ -1,24 +1,75 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, beforeEach } from "vitest";
-import { getLastHash, setLastHash, getHistory, pushHistory, _resetStore } from "./storage";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import * as fs from "fs";
 import { HistoryEntrySchema } from "./schemas";
 
-describe("storage F1-05", () => {
+// ponytail: mock blob in memory via globalThis
+(globalThis as any).__mockBlobStorage = null as string | null;
+
+vi.mock("@vercel/blob", () => ({
+  put: vi.fn(async (pathname: string, body: any) => {
+    const content = typeof body === "string" ? body : JSON.stringify(body);
+    (globalThis as any).__mockBlobStorage = content;
+    return { url: "https://blob.vercel-storage.com/rovos/store.json", pathname };
+  }),
+  list: vi.fn(async () => {
+    const c = (globalThis as any).__mockBlobStorage;
+    if (c) return { blobs: [{ pathname: "rovos/store.json", url: "https://blob.vercel-storage.com/rovos/store.json" }] };
+    return { blobs: [] };
+  }),
+  del: vi.fn(async () => {
+    (globalThis as any).__mockBlobStorage = null;
+  }),
+  head: vi.fn(async () => ({})),
+}));
+
+// mock fetch for blob url
+const _origFetch = global.fetch;
+global.fetch = vi.fn(async (url: any, ...args: any[]) => {
+  const u = typeof url === "string" ? url : url?.toString?.() ?? "";
+  if (u.includes("blob.vercel-storage.com")) {
+    const c = (globalThis as any).__mockBlobStorage;
+    if (c) return new Response(c, { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response("", { status: 404 });
+  }
+  return _origFetch(url as any, ...args);
+}) as any;
+
+import { getLastHash, setLastHash, getHistory, pushHistory, _resetStore } from "./storage";
+import { put, list } from "@vercel/blob";
+
+describe("storage F6-04 blob", () => {
   beforeEach(async () => {
+    (globalThis as any).__mockBlobStorage = null;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    vi.clearAllMocks();
+    // ensure blob mock returns empty
+    (globalThis as any).__mockBlobStorage = null;
     await _resetStore();
-    delete process.env.UPSTASH_REDIS_REST_URL;
-    delete process.env.KV_REST_API_URL;
+    // clean file fallback as well
+    if (fs.existsSync("data/store.json")) {
+      try {
+        fs.unlinkSync("data/store.json");
+      } catch {}
+    }
   });
 
-  it("setLastHash -> getLastHash", async () => {
+  afterEach(() => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    (globalThis as any).__mockBlobStorage = null;
+  });
+
+  it("setLastHash -> getLastHash via file fallback when no BLOB token", async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     const hash = "a".repeat(64);
     await setLastHash(hash);
     const got = await getLastHash();
     expect(got).toBe(hash);
+    expect(fs.existsSync("data/store.json")).toBe(true);
   });
 
-  it("pushHistory 101 -> length 100 FIFO newest first", async () => {
+  it("pushHistory 101 -> length 100 FIFO newest first via file fallback", async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     for (let i = 0; i < 101; i++) {
       const hash = i.toString(16).padStart(64, "0");
       await pushHistory({
@@ -31,12 +82,11 @@ describe("storage F1-05", () => {
     }
     const h = await getHistory();
     expect(h.length).toBe(100);
-    // newest first: last pushed (i=100) should be first
     expect(h[0].snippet).toBe("snippet 100");
   });
 
-  it("getHistory validates zod, filters bad hash", async () => {
-    // push valid
+  it("getHistory validates zod, filters bad hash, corrupt JSON -> empty store", async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     const goodHash = "b".repeat(64);
     await pushHistory({
       timestamp: new Date().toISOString(),
@@ -44,7 +94,6 @@ describe("storage F1-05", () => {
       changed: false,
       durationMs: 10,
     });
-    // directly corrupt file with bad entry
     const path = "data/store.json";
     const raw = JSON.parse(fs.readFileSync(path, "utf-8"));
     raw.history.push({
@@ -55,12 +104,18 @@ describe("storage F1-05", () => {
     });
     fs.writeFileSync(path, JSON.stringify(raw, null, 2));
     const h = await getHistory();
-    // should filter bad, only good remains
     expect(h.every((e) => HistoryEntrySchema.safeParse(e).success)).toBe(true);
     expect(h.find((e) => e.hash === "bad")).toBeUndefined();
+    // corrupt JSON -> empty store
+    fs.writeFileSync(path, "not-json{{{");
+    const empty = await getHistory();
+    expect(empty.length).toBe(0);
+    const nullHash = await getLastHash();
+    expect(nullHash).toBeNull();
   });
 
   it("pushHistory with invalid hash throws", async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     await expect(
       pushHistory({
         timestamp: new Date().toISOString(),
@@ -71,7 +126,8 @@ describe("storage F1-05", () => {
     ).rejects.toThrow();
   });
 
-  it("fallback file when no UPSTASH, data/store.json exists and contains lastHash", async () => {
+  it("fallback file when no BLOB token, data/store.json exists and contains lastHash", async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     const hash = "c".repeat(64);
     await setLastHash(hash);
     expect(fs.existsSync("data/store.json")).toBe(true);
@@ -95,9 +151,44 @@ describe("storage F1-05", () => {
     expect(found).toBe(false);
   });
 
-  it("edge: getLastHash when no data -> null", async () => {
+  it("edge + blob: getLastHash null when no data, corrupt JSON -> empty, BLOB put/fetch via mock", async () => {
+    // file null case
+    delete process.env.BLOB_READ_WRITE_TOKEN;
     await _resetStore();
-    const h = await getLastHash();
-    expect(h).toBeNull();
+    expect(await getLastHash()).toBeNull();
+    // corrupt file -> empty
+    fs.writeFileSync("data/store.json", "corrupt{{{");
+    expect(await getLastHash()).toBeNull();
+    expect(await getHistory()).toEqual([]);
+    // now blob branch with token
+    process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_rw_test_token";
+    (globalThis as any).__mockBlobStorage = null;
+    const hash = "d".repeat(64);
+    await setLastHash(hash);
+    // verify put called with rovos/store.json and private
+    expect(put).toHaveBeenCalled();
+    const putArg = (put as any).mock.calls[0];
+    expect(putArg[0]).toBe("rovos/store.json");
+    expect(putArg[2].access).toBe("private");
+    // get via blob fetch
+    const got = await getLastHash();
+    expect(got).toBe(hash);
+    // list should have been called for read
+    expect(list).toHaveBeenCalled();
+    // FIFO via blob as well
+    await _resetStore();
+    for (let i = 0; i < 101; i++) {
+      const h = i.toString(16).padStart(64, "0");
+      await pushHistory({
+        timestamp: new Date(Date.now() + i * 1000).toISOString(),
+        hash: h,
+        changed: true,
+        durationMs: 10,
+        snippet: `blob ${i}`,
+      });
+    }
+    const hist = await getHistory();
+    expect(hist.length).toBe(100);
+    expect(hist[0].snippet).toBe("blob 100");
   });
 });

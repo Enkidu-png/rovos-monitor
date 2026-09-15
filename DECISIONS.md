@@ -1,8 +1,8 @@
 # DECISIONS
 
-## F0-06 - Vercel env fallback
+## F0-06 - Vercel env fallback (przed F6-04: Redis, po F6-04: Blob)
 
-- Upstash Redis env vars (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) not yet configured on Vercel Hobby. Using file fallback `data/store.json` for dev/test. Prod will use Redis when configured. To add: `vercel env add UPSTASH_REDIS_REST_URL` etc.
+- Blob storage env var (`BLOB_READ_WRITE_TOKEN`) not yet configured on Vercel Hobby. Using file fallback `data/store.json` for dev/test. Prod will use Vercel Blob when configured. To add: `vercel env add BLOB_READ_WRITE_TOKEN` etc. (przed F6-04 był Redis `UPSTASH_REDIS_REST_URL` — usunięty w F6-04)
 - Gmail env vars also not configured yet - will be added in F1 email service.
 - CRON_SECRET not yet set - cron auth will be mocked in dev, required in prod.
 
@@ -42,8 +42,13 @@
 
 ## F5-05 - Docs
 
-- README zawiera GMAIL_APP_PASSWORD, UPSTASH_REDIS_REST_URL, CRON_SECRET, vercel env add, vercel --prod.
+- README zawiera GMAIL_APP_PASSWORD, BLOB_READ_WRITE_TOKEN, CRON_SECRET, vercel env add, vercel --prod.
 - Deploy preview: vercel Hobby daily cron, lokalnie curl /api/health 200 i / 200 zweryfikowane.
+
+## F6-04 - Blob zamiast Redis 2026-09-15
+
+- Przepisano `lib/storage.ts` z `@upstash/redis` na `@vercel/blob` + fallback `data/store.json`. Gdy `BLOB_READ_WRITE_TOKEN` brak (dev) → file `data/store.json` (atomic tmp+rename, corrupt JSON → empty store). Gdy ustawiony → `put("rovos/store.json", JSON.stringify(store), { access: "private" })` + `list({ prefix })` / `head` + `fetch(url)` do odczytu. `npm ls @upstash/redis` → 0, `npm ls @vercel/blob` → 1. Brak `UPSTASH*` w `lib/` (`grep -r UPSTASH lib/ → 0`). `lib/storage.test.ts` 7 testów zielonych z `vi.mock("@vercel/blob")`. `lib/config.ts` + `.env.example` zawierają `BLOB_READ_WRITE_TOKEN` zamiast `UPSTASH_*`. Brzegowe: `getLastHash` null gdy brak danych, corrupt JSON → pusty store, FIFO 100.
+- ponytail: świadomy skrót - jeden plik `rovos/store.json` w Blob zamiast 5 kluczy Redis; `list` + `fetch` zamiast `get` per klucz; `allowOverwrite: true` dla idempotentnego put.
 
 ## Review fix 2026-09-12 - VERCEL_OIDC_TOKEN w .env.local
 

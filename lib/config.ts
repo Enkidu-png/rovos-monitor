@@ -2,6 +2,8 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { MonitorConfigSchema, type MonitorConfig } from "./schemas";
 
+// storage uses BLOB_READ_WRITE_TOKEN (vercel blob) with fallback data/store.json when missing
+
 let cachedConfig: MonitorConfig | null = null;
 
 export function loadConfig(): MonitorConfig {
@@ -26,7 +28,8 @@ export function validateConfig(): MonitorConfig {
 }
 
 // CLI: npm run validate
-if (require.main === module || process.argv.includes("--validate")) {
+// ponytail: ESM compat - require/module undefined in Next.js, guard with typeof
+if ((typeof require !== "undefined" && typeof module !== "undefined" && (require as unknown as { main: unknown }).main === module) || process.argv.includes("--validate")) {
   try {
     const cfg = loadConfig();
     // Validate env secrets handling

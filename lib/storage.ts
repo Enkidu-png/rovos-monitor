@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, unlinkSync } from "fs";
 import { resolve } from "path";
+import { put, list, del, head } from "@vercel/blob";
 import { KVKeys, HistoryEntrySchema, EmailLogEntrySchema, type HistoryEntry, type EmailLogEntry } from "./schemas";
 
 type Store = {
@@ -10,6 +11,28 @@ type Store = {
   emailLog: EmailLogEntry[];
 };
 
+const BLOB_PATHNAME = "rovos/store.json";
+
+function hasBlob(): boolean {
+  return !!process.env.BLOB_READ_WRITE_TOKEN;
+}
+
+function emptyStore(): Store {
+  return { lastHash: null, lastContent: null, lastCheck: null, history: [], emailLog: [] };
+}
+
+function normalizeStore(parsed: unknown): Store {
+  if (!parsed || typeof parsed !== "object") return emptyStore();
+  const p = parsed as Record<string, unknown>;
+  return {
+    lastHash: typeof p.lastHash === "string" ? p.lastHash : null,
+    lastContent: typeof p.lastContent === "string" ? p.lastContent : null,
+    lastCheck: typeof p.lastCheck === "string" ? p.lastCheck : null,
+    history: Array.isArray(p.history) ? (p.history as HistoryEntry[]) : [],
+    emailLog: Array.isArray(p.emailLog) ? (p.emailLog as EmailLogEntry[]) : [],
+  };
+}
+
 function storePath(): string {
   return resolve(process.cwd(), "data/store.json");
 }
@@ -19,39 +42,25 @@ function ensureStoreFile(): void {
   const dir = resolve(process.cwd(), "data");
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   if (!existsSync(p)) {
-    const init: Store = { lastHash: null, lastContent: null, lastCheck: null, history: [], emailLog: [] };
+    const init: Store = emptyStore();
     writeFileSync(p, JSON.stringify(init, null, 2), "utf-8");
   }
 }
 
-function hasRedis(): boolean {
-  return !!(process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL);
-}
-
-async function getRedis() {
-  const { Redis } = await import("@upstash/redis");
-  return Redis.fromEnv();
-}
-
-function readStore(): Store {
+function readFileStore(): Store {
   ensureStoreFile();
   const p = storePath();
   try {
     const raw = readFileSync(p, "utf-8");
     const parsed = JSON.parse(raw);
-    return {
-      lastHash: parsed.lastHash ?? null,
-      lastContent: parsed.lastContent ?? null,
-      lastCheck: parsed.lastCheck ?? null,
-      history: Array.isArray(parsed.history) ? parsed.history : [],
-      emailLog: Array.isArray(parsed.emailLog) ? parsed.emailLog : [],
-    };
+    const normalized = normalizeStore(parsed);
+    return normalized;
   } catch {
-    return { lastHash: null, lastContent: null, lastCheck: null, history: [], emailLog: [] };
+    return emptyStore();
   }
 }
 
-function writeStore(store: Store): void {
+function writeFileStore(store: Store): void {
   ensureStoreFile();
   const p = storePath();
   const tmp = p + ".tmp";
@@ -59,7 +68,6 @@ function writeStore(store: Store): void {
   try {
     renameSync(tmp, p);
   } catch {
-    // fallback if rename fails
     writeFileSync(p, readFileSync(tmp, "utf-8"), "utf-8");
     try {
       unlinkSync(tmp);
@@ -67,119 +75,150 @@ function writeStore(store: Store): void {
   }
 }
 
+async function readBlobStore(): Promise<Store> {
+  try {
+    const { blobs } = await list({ prefix: BLOB_PATHNAME });
+    const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    if (!found) return emptyStore();
+    try {
+      await head(found.url);
+    } catch {}
+    const res = await fetch(found.url);
+    if (!res.ok) return emptyStore();
+    const text = await res.text();
+    const parsed = JSON.parse(text);
+    return normalizeStore(parsed);
+  } catch {
+    return emptyStore();
+  }
+}
+
+async function writeBlobStore(store: Store): Promise<void> {
+  await put(BLOB_PATHNAME, JSON.stringify(store), {
+    access: "private",
+    allowOverwrite: true,
+    addRandomSuffix: false,
+  } as never);
+}
+
+async function delBlobStore(): Promise<void> {
+  try {
+    const { blobs } = await list({ prefix: BLOB_PATHNAME });
+    const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    if (found) await del(found.url);
+  } catch {}
+}
+
+// keep KVKeys used for in-file validation
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _kvKeysRef = KVKeys;
+
 // --- public API ---
 
 export async function getLastHash(): Promise<string | null> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    const val = await redis.get(KVKeys.lastHash);
-    return (val as string | null) ?? null;
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    return s.lastHash;
   }
-  return readStore().lastHash;
+  return readFileStore().lastHash;
 }
 
 export async function setLastHash(hash: string): Promise<void> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    await redis.set(KVKeys.lastHash, hash);
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    s.lastHash = hash;
+    await writeBlobStore(s);
     return;
   }
-  const s = readStore();
+  const s = readFileStore();
   s.lastHash = hash;
-  writeStore(s);
+  writeFileStore(s);
 }
 
 export async function getLastContent(): Promise<string | null> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    const val = await redis.get(KVKeys.lastContent);
-    return (val as string | null) ?? null;
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    return s.lastContent;
   }
-  return readStore().lastContent;
+  return readFileStore().lastContent;
 }
 
 export async function setLastContent(content: string): Promise<void> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    await redis.set(KVKeys.lastContent, content);
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    s.lastContent = content;
+    await writeBlobStore(s);
     return;
   }
-  const s = readStore();
+  const s = readFileStore();
   s.lastContent = content;
-  writeStore(s);
+  writeFileStore(s);
 }
 
 export async function getLastCheck(): Promise<string | null> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    const val = await redis.get(KVKeys.lastCheck);
-    return (val as string | null) ?? null;
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    return s.lastCheck;
   }
-  return readStore().lastCheck;
+  return readFileStore().lastCheck;
 }
 
 export async function setLastCheck(iso: string): Promise<void> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    await redis.set(KVKeys.lastCheck, iso);
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    s.lastCheck = iso;
+    await writeBlobStore(s);
     return;
   }
-  const s = readStore();
+  const s = readFileStore();
   s.lastCheck = iso;
-  writeStore(s);
+  writeFileStore(s);
 }
 
 export async function getHistory(): Promise<HistoryEntry[]> {
   let raw: unknown[];
-  if (hasRedis()) {
-    const redis = await getRedis();
-    const val = await redis.get(KVKeys.history);
-    raw = (val as unknown[] | null) ?? [];
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    raw = s.history;
   } else {
-    raw = readStore().history;
+    raw = readFileStore().history;
   }
-  // validate and filter
   const out: HistoryEntry[] = [];
   for (const e of raw) {
     const parsed = HistoryEntrySchema.safeParse(e);
     if (parsed.success) out.push(parsed.data);
-    else {
-      // try to allow error entries with placeholder hash? filter invalid
-    }
   }
   return out;
 }
 
 export async function pushHistory(entry: HistoryEntry): Promise<void> {
-  // validate before push, allow throw if invalid
   const parsed = HistoryEntrySchema.safeParse(entry);
   if (!parsed.success) {
     throw new Error(`Invalid history entry: ${parsed.error.message}`);
   }
-  if (hasRedis()) {
-    const redis = await getRedis();
+  if (hasBlob()) {
     const history = await getHistory();
     history.unshift(parsed.data);
     const trimmed = history.slice(0, 100);
-    await redis.set(KVKeys.history, trimmed);
+    const s = await readBlobStore();
+    s.history = trimmed;
+    await writeBlobStore(s);
     return;
   }
-  const s = readStore();
-  // re-validate existing history via schema
+  const s = readFileStore();
   const existing = await getHistory();
   existing.unshift(parsed.data);
   s.history = existing.slice(0, 100);
-  writeStore(s);
+  writeFileStore(s);
 }
 
 export async function getEmailLog(): Promise<EmailLogEntry[]> {
   let raw: unknown[];
-  if (hasRedis()) {
-    const redis = await getRedis();
-    const val = await redis.get(KVKeys.emailLog);
-    raw = (val as unknown[] | null) ?? [];
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    raw = s.emailLog;
   } else {
-    raw = readStore().emailLog;
+    raw = readFileStore().emailLog;
   }
   const out: EmailLogEntry[] = [];
   for (const e of raw) {
@@ -192,32 +231,35 @@ export async function getEmailLog(): Promise<EmailLogEntry[]> {
 export async function pushEmailLog(entry: EmailLogEntry): Promise<void> {
   const parsed = EmailLogEntrySchema.safeParse(entry);
   if (!parsed.success) throw new Error(`Invalid email log: ${parsed.error.message}`);
-  if (hasRedis()) {
-    const redis = await getRedis();
+  if (hasBlob()) {
     const log = await getEmailLog();
     log.unshift(parsed.data);
     const trimmed = log.slice(0, 50);
-    await redis.set(KVKeys.emailLog, trimmed);
+    const s = await readBlobStore();
+    s.emailLog = trimmed;
+    await writeBlobStore(s);
     return;
   }
-  const s = readStore();
+  const s = readFileStore();
   const existing = await getEmailLog();
   existing.unshift(parsed.data);
   s.emailLog = existing.slice(0, 50);
-  writeStore(s);
+  writeFileStore(s);
 }
 
 // helper for tests to reset - not part of spec but useful
 export async function _resetStore(): Promise<void> {
-  if (hasRedis()) {
-    const redis = await getRedis();
-    await redis.del(KVKeys.lastHash);
-    await redis.del(KVKeys.lastContent);
-    await redis.del(KVKeys.lastCheck);
-    await redis.del(KVKeys.history);
-    await redis.del(KVKeys.emailLog);
+  if (hasBlob()) {
+    const empty = emptyStore();
+    try {
+      await writeBlobStore(empty);
+    } catch {}
+    try {
+      await delBlobStore();
+      await writeBlobStore(empty);
+    } catch {}
     return;
   }
-  const init: Store = { lastHash: null, lastContent: null, lastCheck: null, history: [], emailLog: [] };
-  writeStore(init);
+  const init: Store = emptyStore();
+  writeFileStore(init);
 }

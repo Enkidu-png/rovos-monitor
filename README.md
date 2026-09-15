@@ -8,8 +8,7 @@ Wszystkie sekrety tylko via env, nigdy w repo (Z06).
 
 | Zmienna | Przeznaczenie |
 |---------|---------------|
-| `UPSTASH_REDIS_REST_URL` | Vercel Redis REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | Vercel Redis REST TOKEN |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob RW Token (storage) |
 | `GMAIL_USER` | Gmail SMTP user |
 | `GMAIL_APP_PASSWORD` | Gmail App Password (16 znakow) |
 | `CRON_SECRET` | Cron auth Bearer token |
@@ -19,14 +18,13 @@ Plik wzorcowy: `.env.example` zawiera puste klucze bez wartosci. Lokalnie skopiu
 
 ```bash
 cp .env.example .env.local
-# uzupelnij GMAIL_APP_PASSWORD, UPSTASH_REDIS_REST_URL, CRON_SECRET
+# uzupelnij GMAIL_APP_PASSWORD, BLOB_READ_WRITE_TOKEN, CRON_SECRET
 ```
 
 ## Vercel env
 
 ```bash
-vercel env add UPSTASH_REDIS_REST_URL
-vercel env add UPSTASH_REDIS_REST_TOKEN
+vercel env add BLOB_READ_WRITE_TOKEN
 vercel env add GMAIL_USER
 vercel env add GMAIL_APP_PASSWORD
 vercel env add CRON_SECRET
@@ -65,7 +63,7 @@ Budzety: hashContent 50KB <50ms, /api/health <100ms, /api/cron/check <2000ms moc
 
 ## Stack
 
-Next.js 16.3.4 App Router, TypeScript strict, Tailwind tokeny CSS, zod, vitest, nodemailer, @upstash/redis, cheerio, playwright-core + @sparticuz/chromium.
+Next.js 16.3.4 App Router, TypeScript strict, Tailwind tokeny CSS, zod, vitest, nodemailer, @vercel/blob, cheerio, playwright-core + @sparticuz/chromium.
 
 ## Cron
 

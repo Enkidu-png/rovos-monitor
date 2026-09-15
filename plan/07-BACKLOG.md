@@ -312,6 +312,17 @@ DoD: każde znalezisko ma issue z pełnym AC obserwacyjnym, wagą i oszacowaniem
   AC: nie realizowane — dyspozycja: świadomie odrzucone, powód: niskie, 1h, nie blokuje odbioru F0-F5. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z08
 - [x] **F6-03** `coverage-perfile` Coverage per-file ≥70% — świadomie odrzucone (niskie) ✓ global 79% 53 testy green, per-file storage 60% config 44% health 0% — AC obniżone do 60 i uzasadnione w DECISIONS.md jako tech-debt
   AC: nie realizowane — dyspozycja: świadomie odrzucone, powód: global 79% wystarczy do odbioru, per-file dopisać w przyszłości. Waga: niska · Oszacowanie: 1h CZYTAJ: plan/01 Z02
+- [x] **F6-04** `blob-storage` Przepisz storage-adapter z @upstash/redis na @vercel/blob + fallback file ✓ npm ls upstash 0 vercel/blob 2.8.0, storage.ts put/list/del/head 1 redis 0, file fallback set/get PASS FIFO 100, blob put rovos/store.json private + list/head/fetch mock, storage.test 7/7 green npm test 53/53 green, build ✓ Compiled successfully, lint 0, config .env.example BLOB 1 UPSTASH 0, grep UPSTASH lib/ 0, brzegowe null + corrupt PASS, dev server health 200 curl / cron 200
+  AC:
+  - `npm ls @upstash/redis` → 0 (usunięty), `npm ls @vercel/blob` → 1 (dodany) (`grep @vercel/blob package.json → 1`)
+  - `lib/storage.ts` używa `import { put, head, del } from "@vercel/blob"` lub `list` — nie `redis` (`grep redis lib/storage.ts → 0`, `grep "@vercel/blob" lib/storage.ts → 1`)
+  - Gdy `BLOB_READ_WRITE_TOKEN` brak (dev) → fallback `data/store.json` działa: `setLastHash("abc...") → getLastHash() → "abc..."`, `pushHistory 101 → getHistory().length 100` (FIFO)
+  - Gdy `BLOB_READ_WRITE_TOKEN` ustawiony → `put("rovos/store.json", JSON.stringify(store), { access: "private" })` i `head`/`fetch` do odczytu (mock w testach via vi.mock("@vercel/blob"))
+  - `lib/storage.test.ts` 7 testów nadal zielonych (mock blob), `npm test` all green, `npm run build` ✓
+  - `lib/config.ts` + `.env.example` zawiera `BLOB_READ_WRITE_TOKEN=` zamiast `UPSTASH_*` (grep BLOB_READ_WRITE_TOKEN .env.example → 1, grep UPSTASH .env.example → 0)
+  - Negatywne: brak `UPSTASH*` w kodzie (`grep -r UPSTASH lib/ → 0`)
+  - Brzegowe: getLastHash null gdy brak danych, corrupt JSON → pusty store
+  CZYTAJ: plan/03 3.2, plan/02 2.2, plan/02 2.5
 
 Przykład formatu znaleziska:
 ```
