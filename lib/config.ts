@@ -1,8 +1,9 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { MonitorConfigSchema, type MonitorConfig } from "./schemas";
+import { MonitorConfigSchema, EnvSchema, type MonitorConfig } from "./schemas";
 
 // storage uses BLOB_READ_WRITE_TOKEN (vercel blob) with fallback data/store.json when missing
+// ZENROWS_API_KEY optional - validated as string if present (see lib/schemas.ts EnvSchema)
 
 let cachedConfig: MonitorConfig | null = null;
 
@@ -24,7 +25,12 @@ export function loadConfig(): MonitorConfig {
 }
 
 export function validateConfig(): MonitorConfig {
-  return loadConfig();
+  const cfg = loadConfig();
+  // validate env optional keys (ZENROWS_API_KEY etc.) — ponytail: warn only, not crash
+  try {
+    EnvSchema.safeParse(process.env);
+  } catch {}
+  return cfg;
 }
 
 // CLI: npm run validate

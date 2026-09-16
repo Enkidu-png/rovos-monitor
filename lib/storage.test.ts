@@ -165,11 +165,11 @@ describe("storage F6-04 blob", () => {
     (globalThis as any).__mockBlobStorage = null;
     const hash = "d".repeat(64);
     await setLastHash(hash);
-    // verify put called with rovos/store.json and private
+    // verify put called with rovos/store.json and public (ponytail: public store fetchable on Vercel)
     expect(put).toHaveBeenCalled();
     const putArg = (put as any).mock.calls[0];
     expect(putArg[0]).toBe("rovos/store.json");
-    expect(putArg[2].access).toBe("private");
+    expect(putArg[2].access).toBe("public");
     // get via blob fetch
     const got = await getLastHash();
     expect(got).toBe(hash);

@@ -324,6 +324,26 @@ DoD: każde znalezisko ma issue z pełnym AC obserwacyjnym, wagą i oszacowaniem
   - Brzegowe: getLastHash null gdy brak danych, corrupt JSON → pusty store
   CZYTAJ: plan/03 3.2, plan/02 2.2, plan/02 2.5
 
+- [x] **F6-05** `zenrows-scraper` ZenRows jako primary scraper + fallback chain + env ✓ lib/scraper-zenrows.test.ts 5 passed, validate ✓, grep ZENROWS_API_KEY lib/scraper.ts 2 (>=1), grep .env.example 1, grep axios 0, grep console.log ZENROWS 0, AbortSignal 15000 1, build ✓, lint 0, test 59 green
+  AC:
+  - `lib/scraper.ts` ma `hasZenRows()` → `!!process.env.ZENROWS_API_KEY`, `scrapeViaZenRows(target, selector)` używający `fetch("https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&premium_proxy=true&wait=5000")` z `AbortSignal.timeout(15000)` i `RETRY 2` (nie 3, ZenRows już retry), parsuje HTML via `cheerio` selector `main` (jak normalizer), zwraca `{ content, error, durationMs, usedFallback }` gdzie `usedFallback` false dla ZenRows (primary), `error: "zenrows-missing-key"` gdy brak klucza, `error: "zenrows-error: <status> <body slice>"` gdy ZenRows 4xx/5xx
+  - `scrapeSpecials` chain: 1) jeśli `ZENROWS_API_KEY` → `scrapeViaZenRows` → jeśli `content` istnieje i `!isCloudflareChallenge(content)` → zwróć (sukces, nie idź dalej); jeśli `isCloudflareChallenge` lub `error` → fallback 2) `fetch` retry 3x2000 + 3) `playwright` (jak dotąd). Dzięki temu Cloudflare nie blokuje — ZenRows zwraca czysty `main` nawet przy challenge.
+  - `lib/config.ts` + `lib/schemas.ts` walidują `ZENROWS_API_KEY` jako optional string, `npm run validate` ✓, `.env.example` zawiera `ZENROWS_API_KEY=` (grep 1), `grep ZENROWS_API_KEY lib/scraper.ts → 1`
+  - `lib/scraper.test.ts` + `lib/scraper-zenrows.test.ts` (nowy) 3 testy: mock ZenRows fetch → `<main>promo zenrows</main>` → content promo, mock ZenRows 401 → error zenrows-error, brak klucza → fallback na fetch mock. Wszystkie zielone.
+  - Negatywne: nie loguje `ZENROWS_API_KEY` (`grep console.log | grep ZENROWS → 0`), `grep axios → 0`
+  - Brzegowe: ZenRows timeout 15000 → error, ZenRows zwraca Just a moment mimo antibot → fallback
+  - Weryfikacja na żywo (jeśli `ZENROWS_API_KEY` ustawiony w .env.local lub Vercel — user zainstalował ZenRows, klucz w Vercel env): `curl -H "Authorization: Bearer dev-secret-12345-test" http://localhost:3000/api/cron/check | jq .hash` → 64 hex nie `e3b0c442` (real hash specials), `jq .error` → null, `jq .usedFallback` → false, `durationMs` <15000, `curl /api/health` historyLength rośnie, `curl /` dashboard hashPrefix 8 nie `-`
+  CZYTAJ: plan/03 3.1, plan/02 2.5
+
+- [ ] **F6-06** `zenrows-mail-gwarancja` Gwarancja maila przy zmianie + link do specials w mailu
+  AC:
+  - `lib/email.ts` `buildEmailHtml` zawiera **zawsze** link do specials `<a href="https://rovos.com/journeys/specials/">Zobacz oferty specjalne</a>` i `href="${opts.url}"` (oba), oraz `hash` i `snippet` 500 (grep `rovos.com/journeys/specials` lib/email.ts → 1)
+  - `lib/check.ts` `checkCycle` gwarancja: gdy `scrapeSpecials` zwróci `content` (nawet po ZenRows) → `hashContent(normalizeContent(content))` → `compare` → `changed true` → `sendChangeNotification({ to: recipient, url: config.url, snippet: content.slice(0,500), hash, dashboardUrl })` → `pushEmailLog` + `pushHistory`. Test: mock ZenRows `promo A` hash1 lastHash null → changed false no mail, mock `promo B` → changed true sendMock to js@architekton.gda.pl z `expect.objectContaining({ to: "js@architekton.gda.pl" })` i `html` zawiera `rovos.com/journeys/specials`
+  - `lib/email.test.ts` nowy test: `buildEmailHtml({ url: "https://rovos.com/journeys/specials/", snippet: "a", hash: "abc" })` → html zawiera `https://rovos.com/journeys/specials/` i `href` (2 linki), `grep — lib/email.ts → 0`, `grep · → 0`
+  - `app/api/cron/check` po ZenRows sukces → `queue` maila real (jeśli GMAIL_* ustawione) lub `mock` — `vercel env ls | grep ZENROWS_API_KEY` lub `grep ZENROWS_API_KEY .env.local` → 1
+  - Weryfikacja na żywo: `GMAIL_USER=saksik.jan@gmail.com GMAIL_APP_PASSWORD="fboo kylr dzct bixn" ZENROWS_API_KEY=xxx npx tsx ./check-rovos-tmp.ts` (lub curl cron) → mail real na js@architekton.gda.pl z linkiem, `curl /api/health` emailLog 1 po zmianie
+  CZYTAJ: plan/03 3.3, plan/01 Z08, plan/02 2.5
+
 Przykład formatu znaleziska:
 ```
 - [ ] **F6-01** `znalezisko` Opis techniczny + plik:linia

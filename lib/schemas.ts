@@ -34,3 +34,12 @@ export const EmailLogEntrySchema = z.object({
   success: z.boolean(),
 });
 export type EmailLogEntry = z.infer<typeof EmailLogEntrySchema>;
+
+export const EnvSchema = z.object({
+  ZENROWS_API_KEY: z.string().optional(),
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  GMAIL_USER: z.string().optional(),
+  GMAIL_APP_PASSWORD: z.string().optional(),
+  CRON_SECRET: z.string().optional(),
+});
+export type Env = z.infer<typeof EnvSchema>;

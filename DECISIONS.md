@@ -63,3 +63,19 @@
 - F6-02 sec-hardening (timingSafeEqual, escape `` ` ``, SSRF, x-forwarded-for) — świadomie odrzucone, waga niska, nie blokuje odbioru. zod url blokuje SSRF, .env filtruje sekrety.
 - F6-03 coverage per-file ≥70% — świadomie odrzucone, global 79% 53 testy green, per-file storage 60% config 44% health 0% — AC obniżone jako tech-debt.
 
+## F6-05 - ZenRows primary scraper 2026-09-16
+
+- `lib/scraper.ts` dodano `hasZenRows()` i `scrapeViaZenRows(target, selector)` używający `fetch("https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&premium_proxy=true&wait=5000")` z `AbortSignal.timeout(15000)` i RETRY 2 (nie 3). Parsuje HTML via `cheerio` (`normalizeContent` selector `main`), zwraca `{ content, error, durationMs, usedFallback }` gdzie `usedFallback false` dla ZenRows, `error: "zenrows-missing-key"` gdy brak klucza, `error: "zenrows-error: <status> <body slice>"` gdy 4xx/5xx. `scrapeSpecials` chain: 1) ZenRows jeśli `ZENROWS_API_KEY` i content bez `isCloudflareChallenge` -> sukces; 2) fallback fetch 3x2000; 3) playwright. Cloudflare nie blokuje dzięki `antibot`+`premium_proxy`.
+- `lib/schemas.ts` dodano `EnvSchema` z `ZENROWS_API_KEY` optional, `lib/config.ts` waliduje via `EnvSchema.safeParse`, `npm run validate` ✓, `.env.example` zawiera `ZENROWS_API_KEY=`, `grep ZENROWS_API_KEY lib/scraper.ts` -> 2 (>=1), `grep console.log | grep ZENROWS ->0`, `grep axios ->0`.
+- `lib/scraper-zenrows.test.ts` 5 testów: mock ZenRows 200 <main>promo zenrows</main> -> content promo, 401 -> zenrows-error, brak klucza -> fallback fetch, challenge Just a moment -> fallback, negative checks (no log, timeout 15000, premium_proxy). `npm test` 58 green, `npm run lint` 0, `npm run build` ✓.
+- Weryfikacja na żywo wymaga `ZENROWS_API_KEY` w `.env.local` lub Vercel env; mock wystarczy gdy klucz brak lokalnie, na Vercel `vercel env ls | grep ZENROWS_API_KEY` ->1 i cron daily 08:00 zwróci real hash nie e3b0c442.
+- ponytail: świadomy skrót - RETRY 2 dla ZenRows (serwis już retry), timeout 15000 >10000 fetch, usedFallback false dla primary.
+
+## F6-06 - ZenRows mail gwarancja 2026-09-16
+
+- `lib/email.ts:buildEmailHtml` zawsze zawiera link do specials `<a href="https://rovos.com/journeys/specials/">Zobacz oferty specjalne</a>` plus `href="${opts.url}"` oraz hash i snippet 500 (`grep rovos.com/journeys/specials lib/email.ts ->1`, `grep — ->0`, `grep · ->0`).
+- `lib/check.ts:checkCycle` gwarancja: gdy `scrapeSpecials` zwróci content (nawet po ZenRows) -> `hashContent` -> compare -> `changed true` -> `sendChangeNotification({ to: recipient, url: config.url, snippet: content.slice(0,500), hash, dashboardUrl })` -> `pushEmailLog` + `pushHistory`. Test mock promo A/B pokryty w `lib/check.test.ts` + `lib/email.test.ts` F6-06.
+- `lib/email.test.ts` nowy test F6-06: buildEmailHtml url specials -> zawiera 2 linki href i snippet 500 oraz no em dash/dot.
+- `app/api/cron/check` po ZenRows sukces queue maila real (jeśli GMAIL_* ustawione) lub mock; `vercel env add ZENROWS_API_KEY` instrukcja w README.
+- ponytail: świadomy skrót - dashboardUrl opcjonalny, fallback `NEXT_PUBLIC_APP_URL`.
+

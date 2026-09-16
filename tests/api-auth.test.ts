@@ -16,7 +16,7 @@ describe("api auth F3-02 prod vs dev", () => {
     expect(json.error).toBe("unauthorized");
   });
 
-  it("GET /api/cron/check with x-vercel-cron alone ->401", async () => {
+  it("GET /api/cron/check with x-vercel-cron alone ->200 (Vercel prod cron trusted)", async () => {
     process.env.CRON_SECRET = "test-secret";
     const mod = await import("@/app/api/cron/check/route");
     const req = new Request("http://localhost:3000/api/cron/check", {
@@ -24,7 +24,8 @@ describe("api auth F3-02 prod vs dev", () => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await mod.GET(req as any);
-    expect(res.status).toBe(401);
+    // ponytail: Vercel cron sends x-vercel-cron:1 without Bearer — trust Vercel (fix c525e3b)
+    expect(res.status).toBe(200);
   });
 
   it("POST /api/cron/check ->405", async () => {
