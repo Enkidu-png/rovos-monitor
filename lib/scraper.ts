@@ -27,11 +27,11 @@ export async function scrapeViaZenRows(target: string, selector = "main"): Promi
   if (!key) {
     return { content: null, error: "zenrows-missing-key", durationMs: Date.now() - start, usedFallback: false };
   }
-  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&premium_proxy=true&wait=5000`;
+  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&wait=2000`;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(10000),
       });
       const html = await res.text();
       if (!res.ok) {
