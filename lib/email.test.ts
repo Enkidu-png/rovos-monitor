@@ -142,4 +142,25 @@ describe("email F1-06", () => {
     vi.unstubAllEnvs();
     vi.stubEnv("NODE_ENV", origEnv);
   });
+
+  it("F6-06: buildEmailHtml contains specials link + url href (2 links) and no em dash or dot", () => {
+    const html = buildEmailHtml({ url: "https://rovos.com/journeys/specials/", snippet: "a", hash: "abc".repeat(21) + "a" });
+    expect(html).toContain("https://rovos.com/journeys/specials/");
+    expect(html).toContain('<a href="https://rovos.com/journeys/specials/">Zobacz oferty specjalne</a>');
+    // href="${opts.url}" must appear (url link)
+    expect(html).toContain('href="https://rovos.com/journeys/specials/"');
+    // count href occurrences >=2 (url + specials + dashboard)
+    const hrefCount = (html.match(/href="/g) || []).length;
+    expect(hrefCount).toBeGreaterThanOrEqual(2);
+    // snippet 500 preserved
+    const html2 = buildEmailHtml({ url: "https://rovos.com/journeys/specials/", snippet: "b".repeat(600), hash: "c".repeat(64) });
+    expect(html2).toContain("b".repeat(500));
+    expect(html2).not.toContain("b".repeat(501));
+    // no em dash, no middle dot in template
+    const txt = fs.readFileSync("lib/email.ts", "utf-8");
+    expect(txt).not.toContain("—");
+    expect(txt).not.toContain("·");
+    // also grep check: file contains rovos.com/journeys/specials exactly once per template (at least 1)
+    expect(txt).toContain("rovos.com/journeys/specials");
+  });
 });

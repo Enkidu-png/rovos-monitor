@@ -335,7 +335,7 @@ DoD: każde znalezisko ma issue z pełnym AC obserwacyjnym, wagą i oszacowaniem
   - Weryfikacja na żywo (jeśli `ZENROWS_API_KEY` ustawiony w .env.local lub Vercel — user zainstalował ZenRows, klucz w Vercel env): `curl -H "Authorization: Bearer dev-secret-12345-test" http://localhost:3000/api/cron/check | jq .hash` → 64 hex nie `e3b0c442` (real hash specials), `jq .error` → null, `jq .usedFallback` → false, `durationMs` <15000, `curl /api/health` historyLength rośnie, `curl /` dashboard hashPrefix 8 nie `-`
   CZYTAJ: plan/03 3.1, plan/02 2.5
 
-- [ ] **F6-06** `zenrows-mail-gwarancja` Gwarancja maila przy zmianie + link do specials w mailu
+- [x] **F6-06** `zenrows-mail-gwarancja` Gwarancja maila przy zmianie + link do specials w mailu ✓ buildEmailHtml specials link 1, href 2, grep — 0 grep · 0, email.test 10 passed, checkCycle promo A/B mail js@architekton.gda.pl, build ✓, lint 0
   AC:
   - `lib/email.ts` `buildEmailHtml` zawiera **zawsze** link do specials `<a href="https://rovos.com/journeys/specials/">Zobacz oferty specjalne</a>` i `href="${opts.url}"` (oba), oraz `hash` i `snippet` 500 (grep `rovos.com/journeys/specials` lib/email.ts → 1)
   - `lib/check.ts` `checkCycle` gwarancja: gdy `scrapeSpecials` zwróci `content` (nawet po ZenRows) → `hashContent(normalizeContent(content))` → `compare` → `changed true` → `sendChangeNotification({ to: recipient, url: config.url, snippet: content.slice(0,500), hash, dashboardUrl })` → `pushEmailLog` + `pushHistory`. Test: mock ZenRows `promo A` hash1 lastHash null → changed false no mail, mock `promo B` → changed true sendMock to js@architekton.gda.pl z `expect.objectContaining({ to: "js@architekton.gda.pl" })` i `html` zawiera `rovos.com/journeys/specials`

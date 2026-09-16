@@ -19,6 +19,7 @@ export function buildEmailHtml(opts: { url: string; snippet: string; hash: strin
   <meta charset="utf-8">
   <h1 style="font-size:18px;color:#0f4a3a">Wykryto zmiane na Rovos Specials</h1>
   <p>URL: <a href="${opts.url}">${opts.url}</a></p>
+  <p><a href="https://rovos.com/journeys/specials/">Zobacz oferty specjalne</a></p>
   <p>Hash: <code>${opts.hash}</code></p>
   <p>Fragment: ${escapeHtml(snippet)}</p>
   <p><a href="${dash}">Zobacz dashboard</a></p>
