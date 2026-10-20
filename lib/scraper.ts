@@ -27,11 +27,11 @@ export async function scrapeViaZenRows(target: string, selector = "main"): Promi
   if (!key) {
     return { content: null, error: "zenrows-missing-key", durationMs: Date.now() - start, usedFallback: false };
   }
-  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&wait=2000`;
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&wait=1000&wait_for=main&block_resources=true`;
+  for (let attempt = 1; attempt <= 1; attempt++) {
     try {
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(5000),
       });
       const html = await res.text();
       if (!res.ok) {
@@ -42,10 +42,7 @@ export async function scrapeViaZenRows(target: string, selector = "main"): Promi
       return { content, durationMs: Date.now() - start, usedFallback: false };
     } catch (e) {
       const msg = e instanceof Error ? e.message.slice(0, 500) : String(e).slice(0, 500);
-      if (attempt === 2) {
-        return { content: null, error: msg, durationMs: Date.now() - start, usedFallback: false };
-      }
-      await sleep(RETRY_DELAY);
+      return { content: null, error: msg, durationMs: Date.now() - start, usedFallback: false };
     }
   }
   return { content: null, error: "zenrows-error: unknown", durationMs: Date.now() - start, usedFallback: false };
