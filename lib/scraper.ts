@@ -31,7 +31,7 @@ export async function scrapeViaZenRows(target: string, selector = "main"): Promi
   for (let attempt = 1; attempt <= 1; attempt++) {
     try {
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(60000),
       });
       const html = await res.text();
       if (!res.ok) {

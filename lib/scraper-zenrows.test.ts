@@ -108,14 +108,14 @@ describe("scraper-zenrows F6-05", () => {
     expect(res.usedFallback).toBe(false);
   });
 
-  it("negative: nie loguje ZENROWS_API_KEY i nie używa axios, timeout 15000", async () => {
+  it("negative: nie loguje ZENROWS_API_KEY i nie używa axios, timeout 60000", async () => {
     const fs = await import("fs");
     const txt = fs.readFileSync("lib/scraper.ts", "utf-8");
     expect(txt).not.toContain("console.log");
     // grep ZENROWS_API_KEY should appear at least once
     expect(txt).toContain("ZENROWS_API_KEY");
     expect(txt).not.toContain("axios");
-    expect(txt).toContain("AbortSignal.timeout(15000)");
+    expect(txt).toContain("AbortSignal.timeout(60000)");
     expect(txt).toContain("api.zenrows.com");
     expect(txt).toContain("premium_proxy=true");
     const hasRetry = txt.includes("RETRY 2") || txt.includes("ZENROWS_RETRY") || txt.includes("attempt <= 2");
