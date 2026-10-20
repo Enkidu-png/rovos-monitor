@@ -84,7 +84,9 @@ async function readBlobStore(): Promise<Store> {
       await head(found.url);
     } catch {}
     const url = (found as unknown as { downloadUrl?: string }).downloadUrl || found.url;
-    const res = await fetch(url);
+    // cache-bust: publiczny URL bloba jest cache'owany przez CDN, bez tego settery czytają stary stan
+    const bust = url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+    const res = await fetch(bust, { cache: "no-store" });
     if (!res.ok) return emptyStore();
     const text = await res.text();
     const parsed = JSON.parse(text);
@@ -245,6 +247,33 @@ export async function pushEmailLog(entry: EmailLogEntry): Promise<void> {
   const existing = await getEmailLog();
   existing.unshift(parsed.data);
   s.emailLog = existing.slice(0, 50);
+  writeFileStore(s);
+}
+
+// jeden odczyt + jeden zapis na cały cykl checka - settery wołane po kolei
+// robiły 4 read-modify-write i nadpisywały się nawzajem stanem z cache CDN
+export async function applyCheckUpdate(patch: {
+  lastCheck: string;
+  entry: HistoryEntry;
+  content?: string;
+  hash?: string;
+}): Promise<void> {
+  const parsed = HistoryEntrySchema.safeParse(patch.entry);
+  if (!parsed.success) throw new Error(`Invalid history entry: ${parsed.error.message}`);
+  const apply = (s: Store) => {
+    s.lastCheck = patch.lastCheck;
+    if (patch.content !== undefined) s.lastContent = patch.content;
+    if (patch.hash !== undefined) s.lastHash = patch.hash;
+    s.history = [parsed.data, ...s.history].slice(0, 100);
+  };
+  if (hasBlob()) {
+    const s = await readBlobStore();
+    apply(s);
+    await writeBlobStore(s);
+    return;
+  }
+  const s = readFileStore();
+  apply(s);
   writeFileStore(s);
 }
 

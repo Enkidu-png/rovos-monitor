@@ -1,6 +1,6 @@
 import { scrapeSpecials } from "./scraper";
 import { hashContent } from "./hasher";
-import { getLastHash, setLastHash, setLastContent, setLastCheck, pushHistory } from "./storage";
+import { getLastHash, applyCheckUpdate } from "./storage";
 import { canSendEmail, sendChangeNotification } from "./email";
 import { loadConfig } from "./config";
 
@@ -22,15 +22,16 @@ export async function checkCycle(): Promise<CheckResult> {
   if (result.error || !result.content) {
     const durationMs = result.durationMs ?? Date.now() - t0;
     const now = new Date().toISOString();
-    await setLastCheck(now);
-    // push history with placeholder hash that passes zod, plus error
-    await pushHistory({
-      timestamp: now,
-      hash: EMPTY_HASH,
-      changed: false,
-      error: result.error || "no-content",
-      durationMs,
-      snippet: undefined,
+    await applyCheckUpdate({
+      lastCheck: now,
+      entry: {
+        timestamp: now,
+        hash: EMPTY_HASH,
+        changed: false,
+        error: result.error || "no-content",
+        durationMs,
+        snippet: undefined,
+      },
     });
     return { changed: false, hash: EMPTY_HASH, durationMs, usedFallback: result.usedFallback, error: result.error || "no-content" };
   }
@@ -41,15 +42,17 @@ export async function checkCycle(): Promise<CheckResult> {
   const now = new Date().toISOString();
   const durationMs = result.durationMs ?? Date.now() - t0;
 
-  await setLastContent(result.content);
-  await setLastHash(hash);
-  await setLastCheck(now);
-  await pushHistory({
-    timestamp: now,
+  await applyCheckUpdate({
+    lastCheck: now,
+    content: result.content,
     hash,
-    changed,
-    durationMs,
-    snippet: result.content.slice(0, 500),
+    entry: {
+      timestamp: now,
+      hash,
+      changed,
+      durationMs,
+      snippet: result.content.slice(0, 500),
+    },
   });
 
   if (changed && (await canSendEmail())) {

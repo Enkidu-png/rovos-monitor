@@ -7,10 +7,7 @@ vi.mock("./scraper", () => ({
 
 vi.mock("./storage", () => ({
   getLastHash: vi.fn(),
-  setLastHash: vi.fn(),
-  setLastContent: vi.fn(),
-  setLastCheck: vi.fn(),
-  pushHistory: vi.fn(),
+  applyCheckUpdate: vi.fn(),
   getLastContent: vi.fn(),
   getLastCheck: vi.fn(),
   getHistory: vi.fn(),
@@ -27,13 +24,13 @@ vi.mock("./email", () => ({
 }));
 
 import { scrapeSpecials } from "./scraper";
-import { getLastHash, pushHistory } from "./storage";
+import { getLastHash, applyCheckUpdate } from "./storage";
 import { sendChangeNotification, canSendEmail } from "./email";
 import { checkCycle } from "./check";
 
 const mockedScrape = vi.mocked(scrapeSpecials);
 const mockedGetLastHash = vi.mocked(getLastHash);
-const mockedPushHistory = vi.mocked(pushHistory);
+const mockedPushHistory = vi.mocked(applyCheckUpdate);
 const mockedSend = vi.mocked(sendChangeNotification);
 const mockedCanSend = vi.mocked(canSendEmail);
 
@@ -57,7 +54,7 @@ describe("checkCycle F1-01", () => {
     expect(mockedSend).not.toHaveBeenCalled();
 
     expect(mockedPushHistory).toHaveBeenCalledTimes(1);
-    const entry = mockedPushHistory.mock.calls[0][0];
+    const entry = mockedPushHistory.mock.calls[0][0].entry;
     expect(entry.durationMs).toBeLessThan(2000);
     expect(entry.snippet?.length ?? 0).toBeLessThanOrEqual(500);
     expect(entry.changed).toBe(false);
@@ -76,7 +73,7 @@ describe("checkCycle F1-01", () => {
       expect.objectContaining({ to: "js@architekton.gda.pl" })
     );
 
-    const entry = mockedPushHistory.mock.calls[0][0];
+    const entry = mockedPushHistory.mock.calls[0][0].entry;
     expect(entry.changed).toBe(true);
     expect(entry.durationMs).toBeLessThan(2000);
     expect(entry.snippet?.length ?? 0).toBeLessThanOrEqual(500);
@@ -102,7 +99,7 @@ describe("checkCycle F1-01", () => {
     expect(res.error).toBe("cloudflare-challenge");
     expect(mockedSend).not.toHaveBeenCalled();
     expect(mockedPushHistory).toHaveBeenCalledTimes(1);
-    const entry = mockedPushHistory.mock.calls[0][0];
+    const entry = mockedPushHistory.mock.calls[0][0].entry;
     expect(entry.error).toBe("cloudflare-challenge");
     expect(entry.changed).toBe(false);
   });
@@ -114,7 +111,7 @@ describe("checkCycle F1-01", () => {
 
     await checkCycle();
 
-    const entry = mockedPushHistory.mock.calls[0][0];
+    const entry = mockedPushHistory.mock.calls[0][0].entry;
     expect(entry.snippet?.length).toBeLessThanOrEqual(500);
     expect(entry.snippet?.length).toBe(500);
   });
