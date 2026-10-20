@@ -27,11 +27,11 @@ export async function scrapeViaZenRows(target: string, selector = "main"): Promi
   if (!key) {
     return { content: null, error: "zenrows-missing-key", durationMs: Date.now() - start, usedFallback: false };
   }
-  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&antibot=true&wait=1000&wait_for=main&block_resources=true`;
+  const url = `https://api.zenrows.com/v1/?apikey=${key}&url=${encodeURIComponent(target)}&js_render=true&premium_proxy=true&wait_for=${encodeURIComponent(selector)}`;
   for (let attempt = 1; attempt <= 1; attempt++) {
     try {
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(15000),
       });
       const html = await res.text();
       if (!res.ok) {
@@ -64,6 +64,8 @@ export async function scrapeSpecials(
     if (zr.content && !isCloudflareChallenge(zr.content) && !zr.error) {
       return zr;
     }
+    // diagnostyka w logach Vercela - bez tego błąd ZenRows ginie w fallbacku
+    console.error("zenrows-failed", zr.error ?? "empty-or-challenge", zr.durationMs);
     if (zr.error && zr.error.includes("zenrows-missing-key")) {
       // no key -> fall through to fetch
     } else if (zr.content && isCloudflareChallenge(zr.content)) {

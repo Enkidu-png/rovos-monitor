@@ -3,7 +3,7 @@ import { checkCycle } from "@/lib/check";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 10;
+export const maxDuration = 60;
 
 function isAuthorized(req: Request): boolean {
   const auth = req.headers.get("authorization");
