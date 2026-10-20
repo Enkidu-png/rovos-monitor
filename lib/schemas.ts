@@ -14,7 +14,7 @@ export const HistoryEntrySchema = z.object({
   hash: z.string().length(64).regex(/^[a-f0-9]+$/),
   changed: z.boolean(),
   error: z.string().optional(),
-  durationMs: z.number().int().min(0).max(60000),
+  durationMs: z.number().int().min(0).max(300000),
   snippet: z.string().max(500).optional(),
 });
 export type HistoryEntry = z.infer<typeof HistoryEntrySchema>;

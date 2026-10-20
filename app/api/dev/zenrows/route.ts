@@ -17,6 +17,8 @@ export async function GET(req: Request) {
 
   const inUrl = new URL(req.url);
   const params = new URLSearchParams(inUrl.searchParams);
+  const slice = Number(params.get("slice") || 400);
+  params.delete("slice");
   params.set("apikey", key);
   if (!params.has("url")) params.set("url", "https://rovos.com/journeys/specials/");
 
@@ -30,7 +32,7 @@ export async function GET(req: Request) {
       status: res.status,
       durationMs: Date.now() - start,
       bodyLength: body.length,
-      bodyStart: body.slice(0, 400),
+      bodyStart: body.slice(0, slice),
       headers: Object.fromEntries(
         [...res.headers.entries()].filter(([k]) => k.startsWith("x-") || k === "content-type")
       ),
